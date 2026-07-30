@@ -1,0 +1,192 @@
+<?php
+/**
+ * Appointments admin page.
+ *
+ * @package MRBooking
+ */
+
+declare(strict_types=1);
+
+namespace MRBooking\Admin\Pages;
+
+use MRBooking\Bookings\Booking_Repository;
+use MRBooking\Helpers;
+use MRBooking\Services\Service_Repository;
+use MRBooking\Staff\Staff_Repository;
+
+defined( 'ABSPATH' ) || exit;
+
+final class Appointments {
+
+	public static function render(): void {
+		$now       = new \DateTimeImmutable( 'now', wp_timezone() );
+		$today     = $now->format( 'Y-m-d' );
+		$tomorrow  = $now->modify( '+1 day' )->format( 'Y-m-d' );
+		$week_end  = $now->modify( '+6 days' )->format( 'Y-m-d' );
+		$month_end = $now->format( 'Y-m-t' );
+
+		$preset = isset( $_GET['preset'] ) ? sanitize_key( wp_unslash( $_GET['preset'] ) ) : '';
+
+		$date_from = isset( $_GET['date_from'] ) ? sanitize_text_field( wp_unslash( $_GET['date_from'] ) ) : '';
+		$date_to   = isset( $_GET['date_to'] ) ? sanitize_text_field( wp_unslash( $_GET['date_to'] ) ) : '';
+
+		if ( $preset && ! $date_from && ! $date_to ) {
+			switch ( $preset ) {
+				case 'today':
+					$date_from = $date_to = $today;
+					break;
+				case 'tomorrow':
+					$date_from = $date_to = $tomorrow;
+					break;
+				case 'week':
+					$date_from = $today;
+					$date_to   = $week_end;
+					break;
+				case 'month':
+					$date_from = $now->format( 'Y-m-01' );
+					$date_to   = $month_end;
+					break;
+			}
+		} elseif ( ! $preset && $date_from && $date_to ) {
+			if ( $date_from === $today && $date_to === $today ) {
+				$preset = 'today';
+			} elseif ( $date_from === $tomorrow && $date_to === $tomorrow ) {
+				$preset = 'tomorrow';
+			} elseif ( $date_from === $today && $date_to === $week_end ) {
+				$preset = 'week';
+			} elseif ( $date_from === $now->format( 'Y-m-01' ) && $date_to === $month_end ) {
+				$preset = 'month';
+			}
+		}
+
+		$filters = array(
+			'status'     => isset( $_GET['status'] ) ? sanitize_text_field( wp_unslash( $_GET['status'] ) ) : '',
+			'date_from'  => $date_from,
+			'date_to'    => $date_to,
+			'phone'      => isset( $_GET['phone'] ) ? sanitize_text_field( wp_unslash( $_GET['phone'] ) ) : '',
+			'search'     => isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '',
+			'staff_id'   => isset( $_GET['staff_id'] ) ? absint( $_GET['staff_id'] ) : 0,
+			'service_id' => isset( $_GET['service_id'] ) ? absint( $_GET['service_id'] ) : 0,
+			'preset'     => $preset,
+		);
+
+		$query_args = array_filter(
+			array(
+				'status'     => $filters['status'],
+				'date_from'  => $filters['date_from'],
+				'date_to'    => $filters['date_to'],
+				'phone'      => $filters['phone'],
+				'search'     => $filters['search'],
+				'staff_id'   => $filters['staff_id'],
+				'service_id' => $filters['service_id'],
+				'limit'      => 150,
+				'order'      => 'DESC',
+			)
+		);
+
+		$bookings      = Booking_Repository::query( $query_args );
+		$status_counts = Booking_Repository::count_by_status(
+			array_filter(
+				array(
+					'date_from'  => $filters['date_from'],
+					'date_to'    => $filters['date_to'],
+					'phone'      => $filters['phone'],
+					'search'     => $filters['search'],
+					'staff_id'   => $filters['staff_id'],
+					'service_id' => $filters['service_id'],
+				)
+			)
+		);
+		$statuses = Helpers::booking_statuses();
+		$staff    = Staff_Repository::all();
+		$services = Service_Repository::all();
+
+		$view_id        = isset( $_GET['view'] ) ? absint( $_GET['view'] ) : 0;
+		$booking        = $view_id ? Booking_Repository::find( $view_id ) : null;
+		$booking_svcs   = $booking ? Booking_Repository::services( (int) $booking->id ) : array();
+		$booking_staff  = ( $booking && ! empty( $booking->staff_id ) ) ? Staff_Repository::find( (int) $booking->staff_id ) : null;
+		$updated        = isset( $_GET['updated'] );
+		$base_url       = admin_url( 'admin.php?page=mr-booking-appointments' );
+		$has_filters    = (bool) array_filter(
+			array(
+				$filters['status'],
+				$filters['date_from'],
+				$filters['date_to'],
+				$filters['phone'],
+				$filters['search'],
+				$filters['staff_id'],
+				$filters['service_id'],
+				$filters['preset'],
+			)
+		);
+
+		$args = $filters; // Backward-compatible template variable.
+
+		include MR_BOOKING_PATH . 'templates/admin/appointments.php';
+	}
+
+	/**
+	 * Build filter URL preserving current query params.
+	 *
+	 * @param array<string, mixed> $overrides
+	 * @param array<string, mixed> $current
+	 */
+	public static function filter_url( array $overrides, array $current ): string {
+		$keys = array( 's', 'phone', 'status', 'staff_id', 'service_id', 'date_from', 'date_to', 'preset' );
+		$q    = array( 'page' => 'mr-booking-appointments' );
+
+		$map = array(
+			's'          => $current['search'] ?? '',
+			'phone'      => $current['phone'] ?? '',
+			'status'     => $current['status'] ?? '',
+			'staff_id'   => $current['staff_id'] ?? 0,
+			'service_id' => $current['service_id'] ?? 0,
+			'date_from'  => $current['date_from'] ?? '',
+			'date_to'    => $current['date_to'] ?? '',
+			'preset'     => $current['preset'] ?? '',
+		);
+
+		foreach ( $overrides as $key => $value ) {
+			$map[ $key ] = $value;
+		}
+
+		foreach ( $keys as $key ) {
+			$val = $map[ $key ] ?? '';
+			if ( '' === $val || 0 === $val || '0' === $val ) {
+				continue;
+			}
+			$q[ $key ] = $val;
+		}
+
+		return add_query_arg( $q, admin_url( 'admin.php' ) );
+	}
+
+	public static function update_status(): void {
+		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+			wp_die( 'Forbidden' );
+		}
+		check_admin_referer( 'mr_booking_update_status' );
+
+		$id       = absint( $_POST['booking_id'] ?? 0 );
+		$status   = sanitize_text_field( wp_unslash( $_POST['status'] ?? '' ) );
+		$redirect = sanitize_text_field( wp_unslash( $_POST['redirect'] ?? 'view' ) );
+
+		if ( $id && Booking_Repository::update_status( $id, $status ) ) {
+			do_action( 'mr_booking_booking_status_changed', $id, $status );
+		}
+
+		if ( 'list' === $redirect ) {
+			$url = admin_url( 'admin.php?page=mr-booking-appointments&status=pending&updated=1' );
+			if ( 'confirmed' === $status ) {
+				$url = admin_url( 'admin.php?page=mr-booking-appointments&status=pending&approved=1' );
+			} elseif ( in_array( $status, array( 'rejected', 'cancelled' ), true ) ) {
+				$url = admin_url( 'admin.php?page=mr-booking-appointments&status=pending&rejected=1' );
+			}
+			wp_safe_redirect( $url );
+			exit;
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-appointments&view=' . $id . '&updated=1' ) );
+		exit;
+	}
+}

@@ -1,0 +1,57 @@
+<?php
+/**
+ * Admin dashboard page.
+ *
+ * @package MRBooking
+ */
+
+declare(strict_types=1);
+
+namespace MRBooking\Admin\Pages;
+
+use MRBooking\Bookings\Booking_Repository;
+use MRBooking\Customers\Customer_Repository;
+use MRBooking\Helpers;
+use MRBooking\Services\Service_Repository;
+use MRBooking\Settings\Settings;
+
+defined( 'ABSPATH' ) || exit;
+
+final class Dashboard {
+
+	public static function render(): void {
+		$today = current_time( 'Y-m-d' );
+		$stats = Booking_Repository::stats( gmdate( 'Y-m-01' ), gmdate( 'Y-m-t' ) );
+		$today_bookings = Booking_Repository::query(
+			array(
+				'date'  => $today,
+				'limit' => 50,
+				'order' => 'ASC',
+			)
+		);
+		$upcoming = Booking_Repository::query(
+			array(
+				'date_from' => $today,
+				'limit'     => 10,
+				'order'     => 'ASC',
+				'exclude_statuses' => array( 'cancelled', 'rejected' ),
+			)
+		);
+
+		$show_form_help = ! empty( Settings::get_value( 'dashboard_show_form_help', 1 ) );
+
+		include MR_BOOKING_PATH . 'templates/admin/dashboard.php';
+	}
+
+	public static function hide_form_help(): void {
+		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+			wp_die( 'Forbidden' );
+		}
+		check_admin_referer( 'mr_booking_hide_form_help' );
+
+		Settings::update( array( 'dashboard_show_form_help' => 0 ) );
+
+		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking' ) );
+		exit;
+	}
+}
