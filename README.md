@@ -4,7 +4,7 @@
 
 # MR Booking
 
-[فارسی](README.md)
+[فارسی](README.fa.md)
 
 Professional appointment and booking management for WordPress — Jalali/Gregorian calendar, services, staff, working hours, holidays, SMS, and email notifications.
 
@@ -123,14 +123,14 @@ add_filter( 'mr_booking_sms_providers', function( $providers ) {
 
 Base URL: `/wp-json/mr-booking/v1/`
 
-| Endpoint | Method | Description |
-|---|---|---|
-| `/services` | GET | List services |
-| `/staff` | GET | List staff |
-| `/availability/month` | GET | Monthly availability |
-| `/availability/slots` | GET | Slots for a day |
-| `/book` | POST | Create booking (nonce required) |
-| `/settings/public` | GET | Public frontend settings |
+| Endpoint              | Method | Description                     |
+| --------------------- | ------ | ------------------------------- |
+| `/services`           | GET    | List services                   |
+| `/staff`              | GET    | List staff                      |
+| `/availability/month` | GET    | Monthly availability            |
+| `/availability/slots` | GET    | Slots for a day                 |
+| `/book`               | POST   | Create booking (nonce required) |
+| `/settings/public`    | GET    | Public frontend settings        |
 
 ---
 
