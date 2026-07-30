@@ -1,40 +1,46 @@
+<p align="center">
+  <img src="assets/img/sticker.gif" alt="MR Booking" width="160" />
+</p>
+
 # MR Booking
 
-افزونه حرفه‌ای مدیریت نوبت و رزرو برای وردپرس — با تقویم شمسی/میلادی، خدمات، پرسنل، ساعات کاری، تعطیلات، پیامک و ایمیل.
+[فارسی](README.md)
 
-**سازنده:** Reza Ansarirad  
-**نیازمندی‌ها:** WordPress 5.8+ · PHP 8.0+
+Professional appointment and booking management for WordPress — Jalali/Gregorian calendar, services, staff, working hours, holidays, SMS, and email notifications.
 
----
-
-## نصب
-
-1. پوشه `mr-booking` را در `wp-content/plugins/` کپی کنید.
-2. از پیشخوان وردپرس افزونه **MR Booking** را فعال کنید.
-3. جداول دیتابیس و تنظیمات پیش‌فرض به‌صورت خودکار ساخته می‌شوند.
-4. **ویزارد راه‌اندازی اولیه** باز می‌شود و این موارد را می‌گیرد:
-   - نام کسب‌وکار
-   - نوع تقویم (شمسی / میلادی / هر دو)
-   - ساعات کاری و روزهای تعطیل
-   - پرسنل
-   - خدمات فعال
-   - قوانین رزرو و رنگ‌ها
-
-اگر ویزارد را رد کنید، بعداً از منوی MR Booking → راه‌اندازی اولیه (تا قبل از اتمام) یا تنظیمات قابل پیکربندی است.
+**Author:** Reza Ansarirad  
+**Requirements:** WordPress 5.8+ · PHP 8.0+
 
 ---
 
-## نمایش فرم رزرو برای بازدیدکنندگان
+## Installation
 
-### شورت‌کد
+1. Copy the `mr-booking` folder into `wp-content/plugins/`.
+2. Activate **MR Booking** from the WordPress admin.
+3. Database tables and default settings are created automatically.
+4. The **setup wizard** opens and walks you through:
+   - Business name
+   - Calendar mode (Jalali / Gregorian / both)
+   - Working hours and closed days
+   - Staff members
+   - Active services
+   - Booking rules and colors
 
-یک **برگه** در وردپرس بسازید (مثلاً «رزرو نوبت») و این شورت‌کد را در محتوا بگذارید:
+If you skip the wizard, you can finish setup later from **MR Booking → Setup** (until completed) or **Settings**.
+
+---
+
+## Showing the booking form to visitors
+
+### Shortcode
+
+Create a **Page** in WordPress (e.g. “Book an appointment”) and add:
 
 ```
 [mr_booking]
 ```
 
-ویژگی‌های اختیاری:
+Optional attributes:
 
 ```
 [mr_booking service="12"]
@@ -42,65 +48,67 @@
 [mr_booking theme="default"]
 ```
 
-### المنتور (Elementor)
+### Elementor
 
-اگر Elementor نصب است:
+If Elementor is installed:
 
-1. صفحه را با Elementor ویرایش کنید.
-2. در پنل ویجت‌ها دسته **MR Booking** را باز کنید (یا «رزرو» را جستجو کنید).
-3. ویجت **فرم رزرو MR Booking** را بکشید داخل صفحه.
-4. در تب Content: پیش‌انتخاب خدمت/پرسنل.
-5. در تب **Style**:
-   - رنگ متن، عنوان، پس‌زمینه، کارت و حاشیه
-   - فونت کلی، عنوان، برچسب‌ها و مراحل
-   - رنگ و فونت دکمه اصلی و دکمه قبلی
-   - ظاهر فیلدهای ورودی و گردی کارت
-
----
-
-## ویجت پیشخوان
-
-از **تنظیمات → پیشخوان** می‌توانید ویجت خلاصه فعالیت را در داشبورد وردپرس فعال کنید و انتخاب کنید چه آمارهایی نمایش داده شود (رزرو امروز، مشتریان، در انتظار تأیید و …).
-
-## روی خود ویجت هم از لینک Configure می‌توانید همان موارد را سریع تغییر دهید.
-
-## منوی مدیریت
-
-- داشبورد
-- نوبت‌ها
-- تقویم (روز / هفته / ماه)
-- مشتریان (+ خروجی CSV، فیلتر تولد، پیامک/ایمیل)
-- خدمات
-- پرسنل
-- ساعات کاری (چند بازه در روز)
-- تعطیلات و تاریخ‌های خاص
-- اعلان‌ها (قالب SMS/Email)
-- گزارش‌ها
-- تنظیمات (عمومی، تقویم، قوانین، ظاهر، متن‌ها، SMS، ایمیل)
+1. Edit the page with Elementor.
+2. Open the **MR Booking** widget category (or search for “booking”).
+3. Drag the **MR Booking Form** widget onto the page.
+4. **Content** tab: pre-select service and/or staff.
+5. **Style** tab:
+   - Text, title, background, card, and border colors
+   - Global, title, label, and step typography
+   - Primary and back button colors and fonts
+   - Input fields and card border radius
 
 ---
 
-## تقویم
+## Dashboard widget
 
-در تنظیمات می‌توانید حالت را انتخاب کنید:
+From **Settings → Dashboard**, enable the activity summary widget on the WordPress dashboard and choose which stats to show (today’s bookings, customers, pending approvals, and more).
 
-- فقط شمسی (Jalali)
-- فقط میلادی
-- هر دو هم‌زمان
-
-تاریخ‌ها در دیتابیس به‌صورت میلادی ذخیره می‌شوند و فقط برای نمایش تبدیل می‌گردند.
+You can also use **Configure** on the widget itself for quick changes.
 
 ---
 
-## پیامک
+## Admin menu
 
-لایه انتزاعی سرویس‌دهنده:
+- Dashboard
+- Appointments
+- Calendar (day / week / month)
+- Customers (CSV export, birthday filters, SMS/email)
+- Services
+- Staff
+- Working hours (multiple periods per day)
+- Holidays and special dates
+- Notifications (SMS/email templates)
+- Reports
+- Settings (general, calendar, rules, appearance, texts, SMS, email)
 
-- کاوه‌نگار (Kavenegar)
-- ملی‌پیامک (Melipayamak)
+---
+
+## Calendar
+
+In settings you can choose:
+
+- Jalali only
+- Gregorian only
+- Both at once
+
+Dates are stored in the database as Gregorian and converted only for display.
+
+---
+
+## SMS
+
+Built-in provider abstraction for:
+
+- Kavenegar
+- Melipayamak
 - SMS.ir
 
-افزودن سرویس جدید با فیلتر:
+Add a custom provider with a filter:
 
 ```php
 add_filter( 'mr_booking_sms_providers', function( $providers ) {
@@ -113,20 +121,20 @@ add_filter( 'mr_booking_sms_providers', function( $providers ) {
 
 ## REST API
 
-پایه: `/wp-json/mr-booking/v1/`
+Base URL: `/wp-json/mr-booking/v1/`
 
-| Endpoint              | Method | توضیح                    |
-| --------------------- | ------ | ------------------------ |
-| `/services`           | GET    | لیست خدمات               |
-| `/staff`              | GET    | لیست پرسنل               |
-| `/availability/month` | GET    | موجودی ماه               |
-| `/availability/slots` | GET    | اسلات‌های یک روز         |
-| `/book`               | POST   | ثبت رزرو (نیاز به nonce) |
-| `/settings/public`    | GET    | تنظیمات عمومی فرانت      |
+| Endpoint | Method | Description |
+|---|---|---|
+| `/services` | GET | List services |
+| `/staff` | GET | List staff |
+| `/availability/month` | GET | Monthly availability |
+| `/availability/slots` | GET | Slots for a day |
+| `/book` | POST | Create booking (nonce required) |
+| `/settings/public` | GET | Public frontend settings |
 
 ---
 
-## هوک‌های مهم
+## Important hooks
 
 ```php
 do_action( 'mr_booking_booking_created', $booking_id, $payload );
@@ -137,9 +145,9 @@ do_action( 'mr_booking_email_sent', $to, $subject, $sent );
 
 ---
 
-## جداول دیتابیس
+## Database tables
 
-پیشوند: `{wp_prefix}mr_`
+Prefix: `{wp_prefix}mr_`
 
 - `services`
 - `staff`
@@ -154,12 +162,12 @@ do_action( 'mr_booking_email_sent', $to, $subject, $sent );
 
 ---
 
-## متغیرهای قالب اعلان
+## Notification template variables
 
 `{customer_name}` `{customer_phone}` `{service_name}` `{booking_date}` `{booking_time}` `{staff_name}` `{booking_id}` `{business_name}`
 
 ---
 
-## حریم خصوصی
+## Privacy
 
-افزونه با ابزارهای Export/Erase داده شخصی وردپرس یکپارچه است.
+The plugin integrates with WordPress personal data export and erasure tools.
