@@ -102,11 +102,17 @@ final class Customer_Repository {
 			'first_name' => sanitize_text_field( (string) ( $data['first_name'] ?? '' ) ),
 			'last_name'  => sanitize_text_field( (string) ( $data['last_name'] ?? '' ) ),
 			'phone'      => Helpers::sanitize_mobile( (string) ( $data['phone'] ?? '' ) ),
-			'email'      => sanitize_email( (string) ( $data['email'] ?? '' ) ) ?: null,
 			'birth_date' => self::sanitize_date( (string) ( $data['birth_date'] ?? '' ) ),
 			'notes'      => sanitize_textarea_field( (string) ( $data['notes'] ?? '' ) ),
 			'updated_at' => $now,
 		);
+
+		$email = sanitize_email( (string) ( $data['email'] ?? '' ) );
+		if ( $email ) {
+			$row['email'] = $email;
+		} elseif ( $id <= 0 ) {
+			$row['email'] = null;
+		}
 
 		if ( ! empty( $data['user_id'] ) ) {
 			$row['user_id'] = absint( $data['user_id'] );

@@ -126,6 +126,8 @@ $colors = array(
 	'color_service_check_border'       => array( __( 'حلقه انتخاب', 'mr-booking' ), __( 'دایره انتخاب قبل از active شدن', 'mr-booking' ) ),
 	'color_service_check_active'       => array( __( 'تیک انتخاب‌شده', 'mr-booking' ), __( 'رنگ دایره وقتی خدمت انتخاب شد', 'mr-booking' ) ),
 	'color_border'        => array( __( 'حاشیه', 'mr-booking' ), __( 'خط‌ها و بوردرها', 'mr-booking' ) ),
+	'color_holiday'       => array( __( 'تعطیلات', 'mr-booking' ), __( 'متن روزهای تعطیل در تقویم', 'mr-booking' ) ),
+	'color_holiday_bg'    => array( __( 'پس‌زمینه تعطیلات', 'mr-booking' ), __( 'رنگ پس‌زمینه روز تعطیل', 'mr-booking' ) ),
 	'color_available'     => array( __( 'تاریخ آزاد', 'mr-booking' ), __( 'روزهای قابل رزرو', 'mr-booking' ) ),
 	'color_unavailable'   => array( __( 'تاریخ غیرفعال', 'mr-booking' ), __( 'روزهای بسته', 'mr-booking' ) ),
 	'color_fully_booked'  => array( __( 'ظرفیت تکمیل', 'mr-booking' ), __( 'روزهای پر', 'mr-booking' ) ),
@@ -136,9 +138,14 @@ $colors = array(
 
 $color_groups = array(
 	'brand' => array(
-		'title' => __( 'برند و دکمه', 'mr-booking' ),
-		'desc'  => __( 'هویت بصری و دکمه‌های اصلی فرم', 'mr-booking' ),
-		'keys'  => array( 'color_primary', 'color_secondary', 'color_accent', 'color_button', 'color_button_hover', 'color_btn_text', 'color_btn_ghost_bg', 'color_btn_ghost_hover', 'color_btn_ghost_text' ),
+		'title' => __( 'برند', 'mr-booking' ),
+		'desc'  => __( 'رنگ‌های اصلی هویت بصری فرم', 'mr-booking' ),
+		'keys'  => array( 'color_primary', 'color_secondary', 'color_accent' ),
+	),
+	'buttons' => array(
+		'title' => __( 'دکمه‌ها', 'mr-booking' ),
+		'desc'  => __( 'رنگ دکمه‌های «ادامه»، «ثبت» و «قبلی» در فرم رزرو', 'mr-booking' ),
+		'keys'  => array( 'color_button', 'color_button_hover', 'color_btn_text', 'color_btn_ghost_bg', 'color_btn_ghost_hover', 'color_btn_ghost_text' ),
 	),
 	'typography' => array(
 		'title' => __( 'متن و فیلدها', 'mr-booking' ),
@@ -170,7 +177,7 @@ $color_groups = array(
 	'calendar' => array(
 		'title' => __( 'تقویم', 'mr-booking' ),
 		'desc'  => __( 'وضعیت روزها در تقویم رزرو', 'mr-booking' ),
-		'keys'  => array( 'color_available', 'color_unavailable', 'color_fully_booked' ),
+		'keys'  => array( 'color_holiday', 'color_holiday_bg', 'color_available', 'color_unavailable', 'color_fully_booked' ),
 	),
 	'feedback' => array(
 		'title' => __( 'پیام‌ها', 'mr-booking' ),
@@ -202,6 +209,22 @@ $color_groups = array(
 		<div class="mrb-settings__toast" role="status">
 			<span class="dashicons dashicons-yes-alt"></span>
 			<?php esc_html_e( 'تنظیمات با موفقیت ذخیره شد.', 'mr-booking' ); ?>
+		</div>
+	<?php endif; ?>
+
+	<?php
+	$theme_applied = isset( $_GET['theme_applied'] ) ? sanitize_key( wp_unslash( $_GET['theme_applied'] ) ) : ''; // phpcs:ignore
+	if ( in_array( $theme_applied, \MRBooking\Settings\Color_Presets::theme_ids(), true ) ) :
+		?>
+		<div class="mrb-settings__toast" role="status">
+			<span class="dashicons dashicons-yes-alt"></span>
+			<?php
+			echo esc_html(
+				'dark' === $theme_applied
+					? __( 'قالب تیره با موفقیت اعمال شد.', 'mr-booking' )
+					: __( 'قالب روشن با موفقیت اعمال شد.', 'mr-booking' )
+			);
+			?>
 		</div>
 	<?php endif; ?>
 
@@ -394,11 +417,11 @@ $color_groups = array(
 							<div class="mrb-settings__grid mrb-settings__grid--colors">
 								<label class="mrb-color-field">
 									<span class="mrb-field__label"><?php esc_html_e( 'رنگ تعطیلات', 'mr-booking' ); ?></span>
-									<?php Helpers::color_input( 'settings[color_holiday]', (string) $settings['color_holiday'], array( 'default' => '#dc2626' ) ); ?>
+									<?php Helpers::color_input( 'settings[color_holiday]', (string) $settings['color_holiday'], array( 'default' => '#f0d875' ) ); ?>
 								</label>
 								<label class="mrb-color-field">
 									<span class="mrb-field__label"><?php esc_html_e( 'پس‌زمینه تعطیلات', 'mr-booking' ); ?></span>
-									<?php Helpers::color_input( 'settings[color_holiday_bg]', (string) $settings['color_holiday_bg'], array( 'default' => '#fee2e2' ) ); ?>
+									<?php Helpers::color_input( 'settings[color_holiday_bg]', (string) $settings['color_holiday_bg'], array( 'default' => '#2a2418' ) ); ?>
 								</label>
 							</div>
 							<div class="mrb-settings__toggles" style="margin-top:14px">
@@ -467,7 +490,72 @@ $color_groups = array(
 							</div>
 						</section>
 
-					<?php elseif ( 'appearance' === $tab ) : ?>
+					<?php elseif ( 'appearance' === $tab ) :
+						$form_theme = (string) ( $settings['form_theme'] ?? 'dark' );
+						if ( ! in_array( $form_theme, array_merge( \MRBooking\Settings\Color_Presets::theme_ids(), array( 'custom' ) ), true ) ) {
+							$form_theme = 'dark';
+						}
+						$theme_cards = array(
+							'dark'  => array(
+								'title'    => __( 'قالب تیره', 'mr-booking' ),
+								'desc'     => __( 'پس‌زمینه مشکی با طلایی و آبی تیره — پیش‌فرض برند', 'mr-booking' ),
+								'swatches' => array( '#0A0A0A', '#111111', '#D4AF37', '#F0D875', '#142A38' ),
+							),
+							'light' => array(
+								'title'    => __( 'قالب روشن', 'mr-booking' ),
+								'desc'     => __( 'پس‌زمینه کرمی با متن سرمه‌ای و اکسنت طلایی', 'mr-booking' ),
+								'swatches' => array( '#F7F5F0', '#FFFFFF', '#D4AF37', '#142A38', '#FFF8E7' ),
+							),
+						);
+						?>
+						<section class="mrb-settings__section mrb-settings__theme-picker">
+							<header class="mrb-settings__palette-head">
+								<div>
+									<h3><?php esc_html_e( 'قالب رنگ فرم', 'mr-booking' ); ?></h3>
+									<p class="mrb-settings__hint"><?php esc_html_e( 'یک قالب آماده انتخاب کنید یا رنگ‌ها را دستی در بخش‌های زیر تنظیم کنید.', 'mr-booking' ); ?></p>
+								</div>
+							</header>
+							<input type="hidden" name="settings[form_theme]" id="mrb-form-theme" value="<?php echo esc_attr( $form_theme ); ?>" />
+							<div class="mrb-theme-cards">
+								<?php foreach ( $theme_cards as $theme_id => $theme_meta ) : ?>
+									<article
+										class="mrb-theme-card <?php echo $form_theme === $theme_id ? 'is-active' : ''; ?>"
+										data-theme="<?php echo esc_attr( $theme_id ); ?>"
+									>
+										<div class="mrb-theme-card__preview" aria-hidden="true">
+											<?php foreach ( $theme_meta['swatches'] as $swatch ) : ?>
+												<span style="background-color: <?php echo esc_attr( $swatch ); ?>;"></span>
+											<?php endforeach; ?>
+										</div>
+										<div class="mrb-theme-card__body">
+											<h4><?php echo esc_html( $theme_meta['title'] ); ?></h4>
+											<p><?php echo esc_html( $theme_meta['desc'] ); ?></p>
+											<div class="mrb-theme-card__actions">
+												<button type="button" class="button mrb-theme-card__preview-btn" data-theme="<?php echo esc_attr( $theme_id ); ?>">
+													<?php esc_html_e( 'پیش‌نمایش در فرم', 'mr-booking' ); ?>
+												</button>
+												<a
+													class="button button-primary mrb-theme-card__apply"
+													href="<?php echo esc_url( wp_nonce_url( admin_url( 'admin-post.php?action=mr_booking_apply_theme&theme=' . $theme_id ), 'mr_booking_apply_theme' ) ); ?>"
+												>
+													<?php esc_html_e( 'اعمال و ذخیره', 'mr-booking' ); ?>
+												</a>
+											</div>
+										</div>
+									</article>
+								<?php endforeach; ?>
+								<article class="mrb-theme-card mrb-theme-card--custom <?php echo 'custom' === $form_theme ? 'is-active' : ''; ?>" data-theme="custom">
+									<div class="mrb-theme-card__preview mrb-theme-card__preview--custom" aria-hidden="true">
+										<span style="background: linear-gradient(135deg, #D4AF37, #142A38);"></span>
+										<span style="background: linear-gradient(135deg, #0A0A0A, #F7F5F0);"></span>
+									</div>
+									<div class="mrb-theme-card__body">
+										<h4><?php esc_html_e( 'سفارشی', 'mr-booking' ); ?></h4>
+										<p><?php esc_html_e( 'رنگ‌ها را خودتان تغییر داده‌اید — با ذخیره تنظیمات حفظ می‌شود.', 'mr-booking' ); ?></p>
+									</div>
+								</article>
+							</div>
+						</section>
 						<section class="mrb-settings__section mrb-settings__palette">
 							<header class="mrb-settings__palette-head">
 								<div>

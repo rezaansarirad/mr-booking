@@ -497,12 +497,12 @@ $steps = array(
 				<div class="mrb-setup__fields mrb-setup__fields--2">
 					<label class="mrb-setup__field">
 						<span class="mrb-setup__field-label"><?php esc_html_e( 'رنگ اصلی', 'mr-booking' ); ?></span>
-						<?php Helpers::color_input( 'color_primary', (string) $settings['color_primary'], array( 'default' => '#0f766e' ) ); ?>
+						<?php Helpers::color_input( 'color_primary', (string) $settings['color_primary'], array( 'default' => '#d4af37' ) ); ?>
 						<span class="mrb-setup__hint"><?php esc_html_e( 'رنگ برجسته تقویم، مراحل و عناصر اصلی فرم.', 'mr-booking' ); ?></span>
 					</label>
 					<label class="mrb-setup__field">
 						<span class="mrb-setup__field-label"><?php esc_html_e( 'رنگ دکمه', 'mr-booking' ); ?></span>
-						<?php Helpers::color_input( 'color_button', (string) $settings['color_button'], array( 'default' => '#0f766e' ) ); ?>
+						<?php Helpers::color_input( 'color_button', (string) $settings['color_button'], array( 'default' => '#d4af37' ) ); ?>
 						<span class="mrb-setup__hint"><?php esc_html_e( 'رنگ دکمه «ادامه» و «ثبت رزرو».', 'mr-booking' ); ?></span>
 					</label>
 				</div>

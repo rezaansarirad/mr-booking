@@ -11,6 +11,7 @@ namespace MRBooking\Admin\Pages;
 
 use MRBooking\Helpers;
 use MRBooking\Notifications\SMS\SMS_Manager;
+use MRBooking\Settings\Color_Presets;
 use MRBooking\Settings\Settings;
 use MRBooking\Admin\Dashboard_Widget;
 
@@ -114,6 +115,10 @@ final class Settings_Page {
 			} elseif ( 'font_family' === $key ) {
 				$fonts = Settings::font_families();
 				$data[ $key ] = isset( $fonts[ (string) $value ] ) ? (string) $value : 'vazirmatn';
+			} elseif ( 'form_theme' === $key ) {
+				$data[ $key ] = in_array( (string) $value, array_merge( Color_Presets::theme_ids(), array( 'custom' ) ), true )
+					? (string) $value
+					: 'custom';
 			} elseif ( 0 === strpos( $key, 'color_' ) ) {
 				$data[ $key ] = sanitize_hex_color( (string) $value ) ?: Settings::defaults()[ $key ] ?? '#000000';
 			} elseif ( 0 === strpos( $key, 'tpl_' ) || 0 === strpos( $key, 'text_' ) ) {
@@ -156,6 +161,24 @@ final class Settings_Page {
 		} else {
 			wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-settings&tab=' . $tab . '&saved=1' ) );
 		}
+		exit;
+	}
+
+	public static function apply_theme(): void {
+		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+			wp_die( 'Forbidden' );
+		}
+		check_admin_referer( 'mr_booking_apply_theme' );
+
+		$theme = isset( $_GET['theme'] ) ? sanitize_key( wp_unslash( $_GET['theme'] ) ) : '';
+		if ( ! in_array( $theme, Color_Presets::theme_ids(), true ) ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-settings&tab=appearance' ) );
+			exit;
+		}
+
+		Settings::update( Color_Presets::get( $theme ) );
+
+		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-settings&tab=appearance&theme_applied=' . $theme ) );
 		exit;
 	}
 }

@@ -11,6 +11,7 @@ namespace MRBooking\Admin;
 
 use MRBooking\Helpers;
 use MRBooking\Services\Service_Repository;
+use MRBooking\Settings\Color_Presets;
 use MRBooking\Settings\Settings;
 use MRBooking\Staff\Staff_Repository;
 use MRBooking\WorkingHours\Hours_Repository;
@@ -377,8 +378,8 @@ final class Setup_Wizard {
 				'require_phone'      => ! empty( $_POST['require_phone'] ) ? 1 : 0,
 				'require_email'      => ! empty( $_POST['require_email'] ) ? 1 : 0,
 				'default_status'     => sanitize_text_field( wp_unslash( $_POST['default_status'] ?? 'pending' ) ),
-				'color_primary'      => sanitize_hex_color( wp_unslash( $_POST['color_primary'] ?? '#0F766E' ) ) ?: '#0F766E',
-				'color_button'       => sanitize_hex_color( wp_unslash( $_POST['color_button'] ?? '#0F766E' ) ) ?: '#0F766E',
+				'color_primary'      => sanitize_hex_color( wp_unslash( $_POST['color_primary'] ?? Color_Presets::BRAND_PRIMARY ) ) ?: Color_Presets::BRAND_PRIMARY,
+				'color_button'       => sanitize_hex_color( wp_unslash( $_POST['color_button'] ?? Color_Presets::BRAND_PRIMARY ) ) ?: Color_Presets::BRAND_PRIMARY,
 			)
 		);
 	}

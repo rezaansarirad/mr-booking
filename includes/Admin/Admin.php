@@ -10,7 +10,9 @@ declare(strict_types=1);
 namespace MRBooking\Admin;
 
 use MRBooking\Export\Exporter;
+use MRBooking\Bookings\Booking_Repository;
 use MRBooking\Helpers;
+use MRBooking\Settings\Color_Presets;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -23,12 +25,14 @@ final class Admin {
 		( new Dashboard_Widget() )->hooks();
 
 		add_action( 'admin_menu', array( $this, 'menu' ) );
+		add_action( 'admin_menu', array( $this, 'menu_badges' ), 999 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
 		add_filter( 'admin_body_class', array( $this, 'body_class' ) );
 		add_action( 'admin_init', array( $this, 'handle_exports' ) );
 		add_action( 'wp_ajax_mr_booking_admin', array( $this, 'ajax' ) );
 
 		add_action( 'admin_post_mr_booking_save_settings', array( Pages\Settings_Page::class, 'save' ) );
+		add_action( 'admin_post_mr_booking_apply_theme', array( Pages\Settings_Page::class, 'apply_theme' ) );
 		add_action( 'admin_post_mr_booking_save_service', array( Pages\Services::class, 'save' ) );
 		add_action( 'admin_post_mr_booking_delete_service', array( Pages\Services::class, 'delete' ) );
 		add_action( 'admin_post_mr_booking_service_toggle', array( Pages\Services::class, 'quick_toggle' ) );
@@ -98,6 +102,27 @@ final class Admin {
 		}
 	}
 
+	public function menu_badges(): void {
+		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+			return;
+		}
+
+		global $submenu;
+		$pending = Booking_Repository::pending_count();
+		if ( $pending < 1 || ! isset( $submenu['mr-booking'] ) ) {
+			return;
+		}
+
+		$badge = ' <span class="awaiting-mod update-plugins count-' . (int) $pending . '"><span class="pending-count">' . (int) $pending . '</span></span>';
+
+		foreach ( $submenu['mr-booking'] as $index => $item ) {
+			if ( isset( $item[2] ) && 'mr-booking-appointments' === $item[2] ) {
+				$submenu['mr-booking'][ $index ][0] .= $badge; // phpcs:ignore WordPress.WP.GlobalVariablesOverride.Prohibited
+				break;
+			}
+		}
+	}
+
 	public function assets( string $hook ): void {
 		if ( 'index.php' === $hook ) {
 			wp_enqueue_style(
@@ -138,19 +163,38 @@ final class Admin {
 		wp_localize_script(
 			'mr-booking-admin',
 			'mrBookingAdmin',
-			array(
-				'ajaxUrl' => admin_url( 'admin-ajax.php' ),
-				'nonce'   => wp_create_nonce( 'mr_booking_admin' ),
-				'i18n'    => array(
-					'confirmDelete'     => __( 'آیا مطمئن هستید؟', 'mr-booking' ),
-					'saved'             => __( 'ذخیره شد.', 'mr-booking' ),
-					'error'             => __( 'خطا رخ داد.', 'mr-booking' ),
-					'durationPreview'   => __( 'این خدمت %s از وقت مشتری را می‌گیرد.', 'mr-booking' ),
-					'minute'            => __( 'دقیقه', 'mr-booking' ),
-					'hour'              => __( 'ساعت', 'mr-booking' ),
-					'hourAndMinute'     => __( '%1$s ساعت و %2$s دقیقه', 'mr-booking' ),
-					'applyBlocksNoSource' => __( 'لطفاً ابتدا بازه زمانی (از و تا) را در حداقل یک روز وارد کنید.', 'mr-booking' ),
+			array_merge(
+				array(
+					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
+					'nonce'   => wp_create_nonce( 'mr_booking_admin' ),
+					'pollBookings'    => false !== strpos( $hook, 'mr-booking' ),
+					'latestBookingId' => Booking_Repository::latest_id(),
+					'appointmentsUrl' => admin_url( 'admin.php?page=mr-booking-appointments' ),
+					'dashboardUrl'    => admin_url( 'admin.php?page=mr-booking' ),
+					'pollIntervalMs'  => 30000,
+					'i18n'    => array(
+						'confirmDelete'       => __( 'آیا مطمئن هستید؟', 'mr-booking' ),
+						'saved'               => __( 'ذخیره شد.', 'mr-booking' ),
+						'error'               => __( 'خطا رخ داد.', 'mr-booking' ),
+						'durationPreview'     => __( 'این خدمت %s از وقت مشتری را می‌گیرد.', 'mr-booking' ),
+						'minute'              => __( 'دقیقه', 'mr-booking' ),
+						'hour'                => __( 'ساعت', 'mr-booking' ),
+						'hourAndMinute'       => __( '%1$s ساعت و %2$s دقیقه', 'mr-booking' ),
+						'applyBlocksNoSource' => __( 'لطفاً ابتدا بازه زمانی (از و تا) را در حداقل یک روز وارد کنید.', 'mr-booking' ),
+						'themePreviewApplied' => __( 'پیش‌نمایش قالب در فیلدهای رنگ اعمال شد. برای ثبت نهایی «ذخیره تنظیمات» را بزنید.', 'mr-booking' ),
+						'newBookingTitle'     => __( 'رزرو جدید', 'mr-booking' ),
+						'newBookingBody'      => __( '%1$s — %2$s', 'mr-booking' ),
+						'newBookingReload'    => __( 'مشاهده لیست', 'mr-booking' ),
+						'newBookingDismiss'   => __( 'بستن', 'mr-booking' ),
+						'newBookingMute'      => __( 'بی‌صدا', 'mr-booking' ),
+					),
 				),
+				false !== strpos( $hook, 'mr-booking-settings' )
+					? array(
+						'colorPresets'    => Color_Presets::all(),
+						'colorPresetKeys' => Color_Presets::theme_keys(),
+					)
+					: array()
 			)
 		);
 
@@ -253,8 +297,28 @@ final class Admin {
 		if ( 'update_status' === $action ) {
 			$id     = absint( $_POST['id'] ?? 0 );
 			$status = sanitize_text_field( wp_unslash( $_POST['status'] ?? '' ) );
-			$ok = \MRBooking\Bookings\Booking_Repository::update_status( $id, $status );
+			$ok = Booking_Repository::update_status( $id, $status );
 			wp_send_json_success( array( 'ok' => $ok ) );
+		}
+
+		if ( 'check_new_bookings' === $action ) {
+			$since_id = absint( $_POST['since_id'] ?? 0 );
+			$new      = Booking_Repository::query(
+				array(
+					'id_min'  => $since_id,
+					'orderby' => 'id',
+					'order'   => 'ASC',
+					'limit'   => 20,
+				)
+			);
+
+			wp_send_json_success(
+				array(
+					'latest_id'     => Booking_Repository::latest_id(),
+					'pending_count' => Booking_Repository::pending_count(),
+					'bookings'      => Booking_Repository::format_for_admin_notice( $new ),
+				)
+			);
 		}
 
 		wp_send_json_error( array( 'message' => 'Unknown action' ) );

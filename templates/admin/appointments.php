@@ -34,11 +34,33 @@ $total_matched = array_sum( $status_counts );
 	</header>
 
 	<?php if ( ! empty( $updated ) ) : ?>
-		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'وضعیت نوبت بروزرسانی شد و در صورت فعال بودن اعلان، پیام برای مشتری ارسال شد.', 'mr-booking' ); ?></p></div>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'وضعیت نوبت بروزرسانی شد.', 'mr-booking' ); ?></p></div>
 	<?php endif; ?>
 	<?php if ( ! empty( $_GET['approved'] ) ) : // phpcs:ignore ?>
-		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد و پیام تأیید برای مشتری ارسال شد.', 'mr-booking' ); ?></p></div>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'رزرو با موفقیت تأیید شد.', 'mr-booking' ); ?></p></div>
 	<?php endif; ?>
+
+	<?php if ( is_array( $notify_feedback ?? null ) ) : ?>
+		<?php
+		$email_sent   = ! empty( $notify_feedback['email']['sent'] );
+		$email_skip   = (string) ( $notify_feedback['email']['skip_reason'] ?? '' );
+		$sms_sent     = ! empty( $notify_feedback['sms']['sent'] );
+		if ( $email_sent ) :
+			?>
+			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'ایمیل تأیید برای مشتری ارسال شد.', 'mr-booking' ); ?></p></div>
+		<?php elseif ( 'customer_email_missing' === $email_skip ) : ?>
+			<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد، اما مشتری ایمیل ثبت نکرده — ایمیل تأیید ارسال نشد.', 'mr-booking' ); ?></p></div>
+		<?php elseif ( 'email_disabled' === $email_skip ) : ?>
+			<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد، اما ارسال ایمیل در تنظیمات غیرفعال است.', 'mr-booking' ); ?></p></div>
+		<?php elseif ( 'notify_on_confirm_disabled' === $email_skip ) : ?>
+			<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد، اما «ارسال اعلان تأیید به مشتری» در بخش اعلان‌ها خاموش است.', 'mr-booking' ); ?></p></div>
+		<?php elseif ( 'wp_mail_failed' === $email_skip ) : ?>
+			<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد، اما ارسال ایمیل ناموفق بود. تنظیمات SMTP/ایمیل سرور را بررسی کنید.', 'mr-booking' ); ?></p></div>
+		<?php elseif ( ! $sms_sent && in_array( $email_skip, array( 'email_template_empty', '' ), true ) && empty( $notify_feedback['email']['attempted'] ) ) : ?>
+			<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد؛ اعلان ایمیل به مشتری ارسال نشد.', 'mr-booking' ); ?></p></div>
+		<?php endif; ?>
+	<?php endif; ?>
+
 	<?php if ( ! empty( $_GET['rejected'] ) ) : // phpcs:ignore ?>
 		<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو رد شد، پیام مربوطه برای مشتری ارسال شد و آن زمان برای رزرو بعدی آزاد است.', 'mr-booking' ); ?></p></div>
 	<?php endif; ?>
@@ -330,6 +352,7 @@ $total_matched = array_sum( $status_counts );
 						<thead>
 							<tr>
 								<th><?php esc_html_e( 'کد', 'mr-booking' ); ?></th>
+								<th><?php esc_html_e( 'ثبت', 'mr-booking' ); ?></th>
 								<th><?php esc_html_e( 'مشتری', 'mr-booking' ); ?></th>
 								<th><?php esc_html_e( 'خدمت', 'mr-booking' ); ?></th>
 								<th><?php esc_html_e( 'پرسنل', 'mr-booking' ); ?></th>
@@ -345,9 +368,12 @@ $total_matched = array_sum( $status_counts );
 								$start = substr( (string) $b->start_datetime, 11, 5 );
 								$end   = substr( (string) $b->end_datetime, 11, 5 );
 								?>
-								<tr>
+								<tr data-booking-id="<?php echo esc_attr( (string) $b->id ); ?>">
 									<td>
 										<code class="mrb-appt-code"><?php echo esc_html( $b->booking_code ); ?></code>
+									</td>
+									<td class="mrb-appt-created">
+										<span><?php echo esc_html( substr( (string) ( $b->created_at ?? '' ), 0, 16 ) ); ?></span>
 									</td>
 									<td>
 										<strong class="mrb-appt-customer"><?php echo esc_html( trim( $b->first_name . ' ' . $b->last_name ) ); ?></strong>

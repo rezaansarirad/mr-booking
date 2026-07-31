@@ -83,9 +83,19 @@ final class Booking_Repository {
 			$params   = array_merge( $params, $statuses );
 		}
 
+		if ( ! empty( $args['id_min'] ) ) {
+			$where[]  = 'b.id > %d';
+			$params[] = absint( $args['id_min'] );
+		}
+
 		$limit  = absint( $args['limit'] ?? 100 );
 		$offset = absint( $args['offset'] ?? 0 );
 		$order  = ( isset( $args['order'] ) && 'ASC' === strtoupper( (string) $args['order'] ) ) ? 'ASC' : 'DESC';
+
+		$orderby_raw = sanitize_key( (string) ( $args['orderby'] ?? 'start_datetime' ) );
+		$orderby     = in_array( $orderby_raw, array( 'created_at', 'start_datetime', 'id' ), true )
+			? $orderby_raw
+			: 'start_datetime';
 
 		$sql = "SELECT b.*, c.first_name, c.last_name, c.phone, c.email,
 				TRIM(CONCAT_WS(' ', st.first_name, st.last_name)) AS staff_name,
@@ -99,13 +109,50 @@ final class Booking_Repository {
 			LEFT JOIN {$c} c ON c.id = b.customer_id
 			LEFT JOIN {$st} st ON st.id = b.staff_id
 			WHERE " . implode( ' AND ', $where ) . "
-			ORDER BY b.start_datetime {$order}
+			ORDER BY b.{$orderby} {$order}
 			LIMIT %d OFFSET %d";
 
 		$params[] = $limit;
 		$params[] = $offset;
 
 		return $wpdb->get_results( $wpdb->prepare( $sql, ...$params ) ) ?: array(); // phpcs:ignore
+	}
+
+	public static function latest_id(): int {
+		global $wpdb;
+		$b = Helpers::table( 'bookings' );
+
+		return (int) $wpdb->get_var( "SELECT MAX(id) FROM {$b}" ); // phpcs:ignore
+	}
+
+	public static function pending_count(): int {
+		global $wpdb;
+		$b = Helpers::table( 'bookings' );
+
+		return (int) $wpdb->get_var( $wpdb->prepare( "SELECT COUNT(*) FROM {$b} WHERE status = %s", 'pending' ) ); // phpcs:ignore
+	}
+
+	/**
+	 * @return list<array<string, mixed>>
+	 */
+	public static function format_for_admin_notice( array $bookings ): array {
+		$statuses = Helpers::booking_statuses();
+		$out      = array();
+
+		foreach ( $bookings as $b ) {
+			$out[] = array(
+				'id'       => (int) $b->id,
+				'code'     => (string) $b->booking_code,
+				'name'     => trim( (string) $b->first_name . ' ' . (string) $b->last_name ),
+				'phone'    => (string) $b->phone,
+				'datetime' => Helpers::format_booking_datetime( (string) $b->start_datetime ),
+				'status'   => (string) $b->status,
+				'status_label' => (string) ( $statuses[ $b->status ] ?? $b->status ),
+				'url'      => admin_url( 'admin.php?page=mr-booking-appointments&view=' . (int) $b->id ),
+			);
+		}
+
+		return $out;
 	}
 
 	/**

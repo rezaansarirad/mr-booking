@@ -24,9 +24,17 @@ final class Dashboard {
 		$stats = Booking_Repository::stats( gmdate( 'Y-m-01' ), gmdate( 'Y-m-t' ) );
 		$today_bookings = Booking_Repository::query(
 			array(
-				'date'  => $today,
-				'limit' => 50,
-				'order' => 'ASC',
+				'date'    => $today,
+				'limit'   => 50,
+				'orderby' => 'created_at',
+				'order'   => 'DESC',
+			)
+		);
+		$recent = Booking_Repository::query(
+			array(
+				'limit'   => 15,
+				'orderby' => 'created_at',
+				'order'   => 'DESC',
 			)
 		);
 		$upcoming = Booking_Repository::query(

@@ -1646,6 +1646,96 @@
   margin-top: 20px;
 }
 
+/* Theme preset picker (settings → appearance) */
+.mrb-settings__theme-picker {
+  margin-bottom: 8px;
+}
+
+.mrb-theme-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+  gap: 14px;
+}
+
+.mrb-theme-card {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  padding: 14px;
+  border: 2px solid #e2eeeb;
+  border-radius: 16px;
+  background: #fff;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.mrb-theme-card:hover {
+  border-color: #d4af37;
+  box-shadow: 0 10px 28px rgba(20, 42, 56, 0.08);
+}
+
+.mrb-theme-card.is-active {
+  border-color: #d4af37;
+  box-shadow: 0 0 0 1px #d4af37, 0 12px 32px rgba(212, 175, 55, 0.14);
+}
+
+.mrb-theme-card__preview {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+  min-height: 52px;
+}
+
+.mrb-theme-card__preview span {
+  border-radius: 10px;
+  min-height: 52px;
+  border: 1px solid rgba(0, 0, 0, 0.06);
+}
+
+.mrb-theme-card__preview--custom {
+  grid-template-columns: 1fr 1fr;
+}
+
+.mrb-theme-card__body h4 {
+  margin: 0 0 4px;
+  font-size: 0.96rem;
+  color: #142a38;
+}
+
+.mrb-theme-card__body p {
+  margin: 0 0 10px;
+  font-size: 0.78rem;
+  color: #6b8580;
+  line-height: 1.45;
+}
+
+.mrb-theme-card__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mrb-theme-card__preview-btn,
+.mrb-theme-card__apply {
+  flex: 1 1 auto;
+  text-align: center;
+  justify-content: center;
+}
+
+.mrb-theme-card--custom .mrb-theme-card__body p {
+  margin-bottom: 0;
+}
+
+.mrb-settings__toast--inline {
+  margin-top: 12px;
+  animation: mrbToastIn 0.25s ease;
+}
+
+@media (max-width: 782px) {
+  .mrb-theme-cards {
+    grid-template-columns: 1fr;
+  }
+}
+
 @media (max-width: 640px) {
   .mrb-settings__palette-grid {
     grid-template-columns: 1fr;
@@ -4320,5 +4410,136 @@ body.mrb-hide-branding .mrb-setup__eyebrow {
 @media (min-width: 640px) {
   .mrb-staff-new-dialog .mrb-hours-week {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+/* Dashboard recent bookings + live admin notifications */
+.mrb-panel--recent {
+  margin-top: 16px;
+}
+
+.mrb-panel__head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+
+.mrb-panel__head h2 {
+  margin: 0;
+}
+
+.mrb-panel__head a {
+  font-size: 0.86rem;
+  text-decoration: none;
+}
+
+.mrb-table tbody tr.is-new-flash {
+  animation: mrbRowFlash 1.8s ease;
+}
+
+@keyframes mrbRowFlash {
+  0% { background: color-mix(in srgb, #d4af37 28%, transparent); }
+  100% { background: transparent; }
+}
+
+.mrb-admin-notify-stack {
+  position: fixed;
+  top: 36px;
+  left: 20px;
+  z-index: 100001;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  max-width: min(360px, calc(100vw - 32px));
+  pointer-events: none;
+}
+
+.mrb-admin-notify {
+  display: grid;
+  grid-template-columns: 42px minmax(0, 1fr);
+  gap: 10px 12px;
+  padding: 14px;
+  border-radius: 14px;
+  background: #142a38;
+  color: #f5f3ee;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22);
+  border: 1px solid color-mix(in srgb, #d4af37 35%, transparent);
+  opacity: 0;
+  transform: translateX(-12px);
+  transition: opacity 0.22s ease, transform 0.22s ease;
+  pointer-events: auto;
+}
+
+.mrb-admin-notify.is-visible {
+  opacity: 1;
+  transform: none;
+}
+
+.mrb-admin-notify.is-hiding {
+  opacity: 0;
+  transform: translateX(-12px);
+}
+
+.mrb-admin-notify__icon {
+  width: 42px;
+  height: 42px;
+  border-radius: 12px;
+  background: linear-gradient(135deg, #d4af37, #f0d875);
+  position: relative;
+}
+
+.mrb-admin-notify__icon::after {
+  content: "";
+  position: absolute;
+  inset: 11px;
+  border-radius: 3px;
+  border: 2px solid #142a38;
+  border-top: 0;
+  border-right: 0;
+  transform: rotate(-45deg);
+}
+
+.mrb-admin-notify__body strong {
+  display: block;
+  color: #f0d875;
+  margin-bottom: 4px;
+}
+
+.mrb-admin-notify__body p {
+  margin: 0 0 4px;
+  font-size: 0.88rem;
+  line-height: 1.45;
+}
+
+.mrb-admin-notify__meta {
+  font-size: 0.74rem;
+  color: color-mix(in srgb, #f5f3ee 72%, #94a3b8);
+}
+
+.mrb-admin-notify__actions {
+  grid-column: 1 / -1;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.mrb-admin-notify__actions .button {
+  margin: 0;
+}
+
+.mrb-appt-created span {
+  font-size: 0.82rem;
+  color: #64748b;
+  white-space: nowrap;
+}
+
+@media (max-width: 782px) {
+  .mrb-admin-notify-stack {
+    top: 46px;
+    left: 10px;
+    right: 10px;
+    max-width: none;
   }
 }

@@ -21,9 +21,15 @@ defined( 'ABSPATH' ) || exit;
 
 final class Notification_Service {
 
+	/** @var array<string, true> */
+	private static array $sent_in_request = array();
+
+	/** @var array<string, mixed>|null */
+	private static ?array $last_notify_result = null;
+
 	public function hooks(): void {
 		add_action( 'mr_booking_booking_created', array( $this, 'on_created' ), 10, 1 );
-		add_action( 'mr_booking_booking_status_changed', array( $this, 'on_status' ), 10, 2 );
+		add_action( 'mr_booking_booking_status_changed', array( $this, 'on_status' ), 10, 3 );
 	}
 
 	public function on_created( int $booking_id ): void {
@@ -75,25 +81,70 @@ final class Notification_Service {
 	}
 
 	public function notify_customer( int $booking_id, string $event ): void {
+		self::notify_customer_result( $booking_id, $event );
+	}
+
+	/**
+	 * @return array{email: array{attempted: bool, sent: bool, skip_reason: string|null}, sms: array{attempted: bool, sent: bool, skip_reason: string|null}}
+	 */
+	public static function notify_customer_result( int $booking_id, string $event ): array {
+		$result = array(
+			'email' => array(
+				'attempted'   => false,
+				'sent'        => false,
+				'skip_reason' => null,
+			),
+			'sms'   => array(
+				'attempted'   => false,
+				'sent'        => false,
+				'skip_reason' => null,
+			),
+		);
+
+		$dedupe_key = $booking_id . ':' . $event;
+		if ( isset( self::$sent_in_request[ $dedupe_key ] ) ) {
+			return self::$last_notify_result ?? $result;
+		}
+		self::$sent_in_request[ $dedupe_key ] = true;
+
 		$booking = Booking_Repository::find( $booking_id );
 		if ( ! $booking ) {
-			return;
+			$result['email']['skip_reason'] = 'booking_not_found';
+			$result['sms']['skip_reason']   = 'booking_not_found';
+			return $result;
 		}
 
 		$settings = Settings::get();
+		$defaults = Settings::defaults();
 
 		if ( 'confirmed' === $event && empty( $settings['notify_customer_on_confirm'] ) ) {
-			return;
+			$result['email']['skip_reason'] = 'notify_on_confirm_disabled';
+			$result['sms']['skip_reason']   = 'notify_on_confirm_disabled';
+			return $result;
 		}
 
 		$vars = self::vars_for_booking( $booking );
 
 		$sms_key = 'tpl_sms_' . $event;
 		$sms_tpl = trim( (string) ( $settings[ $sms_key ] ?? '' ) );
+		if ( '' === $sms_tpl ) {
+			$sms_tpl = trim( (string) ( $defaults[ $sms_key ] ?? '' ) );
+		}
 		if ( ! empty( $settings['sms_enabled'] ) && $sms_tpl && ! empty( $booking->phone ) && Helpers::is_valid_mobile( (string) $booking->phone ) ) {
-			$msg    = Helpers::replace_vars( $sms_tpl, $vars );
-			$result = SMS_Manager::send( (string) $booking->phone, $msg );
-			self::log( $booking_id, (int) $booking->customer_id, 'sms', (string) $booking->phone, '', $msg, $result );
+			$result['sms']['attempted'] = true;
+			$msg                        = Helpers::replace_vars( $sms_tpl, $vars );
+			$sms_result                 = SMS_Manager::send( (string) $booking->phone, $msg );
+			$result['sms']['sent']      = ! empty( $sms_result['ok'] );
+			if ( ! $result['sms']['sent'] ) {
+				$result['sms']['skip_reason'] = (string) ( $sms_result['error'] ?? 'sms_failed' );
+			}
+			self::log( $booking_id, (int) $booking->customer_id, 'sms', (string) $booking->phone, '', $msg, $sms_result );
+		} elseif ( empty( $settings['sms_enabled'] ) ) {
+			$result['sms']['skip_reason'] = 'sms_disabled';
+		} elseif ( ! $sms_tpl ) {
+			$result['sms']['skip_reason'] = 'sms_template_empty';
+		} elseif ( empty( $booking->phone ) || ! Helpers::is_valid_mobile( (string) $booking->phone ) ) {
+			$result['sms']['skip_reason'] = 'phone_missing';
 		}
 
 		$email_subj_key = 'tpl_email_' . $event . '_subject';
@@ -101,10 +152,28 @@ final class Notification_Service {
 		$email          = sanitize_email( (string) ( $booking->email ?? '' ) );
 		$subject_tpl    = trim( (string) ( $settings[ $email_subj_key ] ?? '' ) );
 		$body_tpl       = trim( (string) ( $settings[ $email_body_key ] ?? '' ) );
-		if ( ! empty( $settings['email_enabled'] ) && $email && is_email( $email ) && $subject_tpl && $body_tpl ) {
-			$subject = Helpers::replace_vars( $subject_tpl, $vars );
-			$body    = Helpers::replace_vars( $body_tpl, $vars );
-			$sent    = Email_Sender::send( $email, $subject, $body );
+		if ( '' === $subject_tpl ) {
+			$subject_tpl = trim( (string) ( $defaults[ $email_subj_key ] ?? '' ) );
+		}
+		if ( '' === $body_tpl ) {
+			$body_tpl = trim( (string) ( $defaults[ $email_body_key ] ?? '' ) );
+		}
+
+		if ( empty( $settings['email_enabled'] ) ) {
+			$result['email']['skip_reason'] = 'email_disabled';
+		} elseif ( ! $email || ! is_email( $email ) ) {
+			$result['email']['skip_reason'] = 'customer_email_missing';
+		} elseif ( ! $subject_tpl || ! $body_tpl ) {
+			$result['email']['skip_reason'] = 'email_template_empty';
+		} else {
+			$result['email']['attempted'] = true;
+			$subject                      = Helpers::replace_vars( $subject_tpl, $vars );
+			$body                         = Helpers::replace_vars( $body_tpl, $vars );
+			$sent                         = Email_Sender::send( $email, $subject, $body );
+			$result['email']['sent']      = $sent;
+			if ( ! $sent ) {
+				$result['email']['skip_reason'] = 'wp_mail_failed';
+			}
 			self::log(
 				$booking_id,
 				(int) $booking->customer_id,
@@ -115,6 +184,20 @@ final class Notification_Service {
 				array( 'ok' => $sent )
 			);
 		}
+
+		self::$last_notify_result = $result;
+
+		return $result;
+	}
+
+	/**
+	 * @return array<string, mixed>|null
+	 */
+	public static function pull_last_notify_result(): ?array {
+		$result                   = self::$last_notify_result;
+		self::$last_notify_result = null;
+
+		return $result;
 	}
 
 	public function notify_admins_new_booking( object $booking ): void {

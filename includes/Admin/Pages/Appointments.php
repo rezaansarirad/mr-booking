@@ -80,6 +80,7 @@ final class Appointments {
 				'staff_id'   => $filters['staff_id'],
 				'service_id' => $filters['service_id'],
 				'limit'      => 150,
+				'orderby'    => 'created_at',
 				'order'      => 'DESC',
 			)
 		);
@@ -106,6 +107,13 @@ final class Appointments {
 		$booking_svcs   = $booking ? Booking_Repository::services( (int) $booking->id ) : array();
 		$booking_staff  = ( $booking && ! empty( $booking->staff_id ) ) ? Staff_Repository::find( (int) $booking->staff_id ) : null;
 		$updated        = isset( $_GET['updated'] );
+		$notify_feedback = null;
+		if ( is_user_logged_in() ) {
+			$notify_feedback = get_transient( 'mrb_notify_feedback_' . get_current_user_id() );
+			if ( $notify_feedback ) {
+				delete_transient( 'mrb_notify_feedback_' . get_current_user_id() );
+			}
+		}
 		$base_url       = admin_url( 'admin.php?page=mr-booking-appointments' );
 		$has_filters    = (bool) array_filter(
 			array(
@@ -170,9 +178,19 @@ final class Appointments {
 		$id       = absint( $_POST['booking_id'] ?? 0 );
 		$status   = sanitize_text_field( wp_unslash( $_POST['status'] ?? '' ) );
 		$redirect = sanitize_text_field( wp_unslash( $_POST['redirect'] ?? 'view' ) );
+		$booking  = $id ? Booking_Repository::find( $id ) : null;
+		$old_status = $booking ? (string) $booking->status : '';
 
-		if ( $id ) {
-			Booking_Repository::update_status( $id, $status );
+		if ( $id && $booking && Booking_Repository::update_status( $id, $status ) && $old_status !== $status ) {
+			$notify_result = \MRBooking\Notifications\Notification_Service::pull_last_notify_result();
+
+			if ( $notify_result && is_user_logged_in() ) {
+				set_transient(
+					'mrb_notify_feedback_' . get_current_user_id(),
+					$notify_result,
+					MINUTE_IN_SECONDS
+				);
+			}
 		}
 
 		if ( 'list' === $redirect ) {

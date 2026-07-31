@@ -6,6 +6,7 @@
  * @var array $stats
  * @var array $today_bookings
  * @var array $upcoming
+ * @var array $recent
  * @var bool  $show_form_help
  */
 
@@ -122,4 +123,39 @@ $statuses = \MRBooking\Helpers::booking_statuses();
 			<?php endif; ?>
 		</section>
 	</div>
+
+	<section class="mrb-panel mrb-panel--recent">
+		<div class="mrb-panel__head">
+			<h2><?php esc_html_e( 'آخرین رزروهای ثبت‌شده', 'mr-booking' ); ?></h2>
+			<a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-appointments' ) ); ?>"><?php esc_html_e( 'مشاهده همه', 'mr-booking' ); ?></a>
+		</div>
+		<?php if ( empty( $recent ) ) : ?>
+			<p class="mrb-empty"><?php esc_html_e( 'هنوز رزروی ثبت نشده است.', 'mr-booking' ); ?></p>
+		<?php else : ?>
+			<table class="widefat mrb-table mrb-table--recent">
+				<thead>
+					<tr>
+						<th><?php esc_html_e( 'ثبت', 'mr-booking' ); ?></th>
+						<th><?php esc_html_e( 'نوبت', 'mr-booking' ); ?></th>
+						<th><?php esc_html_e( 'مشتری', 'mr-booking' ); ?></th>
+						<th><?php esc_html_e( 'موبایل', 'mr-booking' ); ?></th>
+						<th><?php esc_html_e( 'وضعیت', 'mr-booking' ); ?></th>
+						<th></th>
+					</tr>
+				</thead>
+				<tbody>
+					<?php foreach ( $recent as $b ) : ?>
+						<tr data-booking-id="<?php echo esc_attr( (string) $b->id ); ?>">
+							<td><?php echo esc_html( substr( (string) ( $b->created_at ?? '' ), 0, 16 ) ); ?></td>
+							<td><?php echo esc_html( \MRBooking\Helpers::format_booking_datetime( (string) $b->start_datetime ) ); ?></td>
+							<td><?php echo esc_html( trim( $b->first_name . ' ' . $b->last_name ) ); ?></td>
+							<td dir="ltr"><?php echo esc_html( $b->phone ); ?></td>
+							<td><span class="mrb-badge mrb-badge--<?php echo esc_attr( $b->status ); ?>"><?php echo esc_html( $statuses[ $b->status ] ?? $b->status ); ?></span></td>
+							<td><a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-appointments&view=' . $b->id ) ); ?>"><?php esc_html_e( 'جزئیات', 'mr-booking' ); ?></a></td>
+						</tr>
+					<?php endforeach; ?>
+				</tbody>
+			</table>
+		<?php endif; ?>
+	</section>
 </div>

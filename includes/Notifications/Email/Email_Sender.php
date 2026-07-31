@@ -29,8 +29,11 @@ final class Email_Sender {
 		}
 
 		$from_name  = (string) $settings['email_from_name'];
-		$from_email = (string) $settings['email_from_email'];
-		$reply      = (string) $settings['email_reply_to'];
+		$from_email = sanitize_email( (string) $settings['email_from_email'] );
+		if ( ! $from_email || ! is_email( $from_email ) ) {
+			$from_email = sanitize_email( (string) get_option( 'admin_email' ) );
+		}
+		$reply = sanitize_email( (string) $settings['email_reply_to'] );
 
 		$default_headers = array(
 			'Content-Type: text/html; charset=UTF-8',

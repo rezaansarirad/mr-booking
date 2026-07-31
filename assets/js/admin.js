@@ -308,4 +308,281 @@
 			e.preventDefault();
 		}
 	});
+
+	function setThemeActive(theme) {
+		$('.mrb-theme-card').removeClass('is-active');
+		$('.mrb-theme-card[data-theme="' + theme + '"]').addClass('is-active');
+		$('#mrb-form-theme').val(theme);
+	}
+
+	function applyColorPreset(preset) {
+		if (!preset) return;
+
+		function normalizeHex(val) {
+			if (val === null || val === undefined) return val;
+			var s = String(val).trim();
+			if (s.charAt(0) !== '#') s = '#' + s;
+			if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toLowerCase();
+			return s;
+		}
+
+		function settingField(key) {
+			return document.querySelector(
+				'[name="settings[' + key + ']"]'
+			);
+		}
+
+		Object.keys(preset).forEach(function (key) {
+			var val = preset[key];
+			var field = settingField(key);
+			if (!field) return;
+
+			if (field.type === 'checkbox') {
+				field.checked = !!parseInt(String(val), 10);
+				return;
+			}
+
+			if (field.type === 'color') {
+				val = normalizeHex(val);
+			}
+
+			field.value = val;
+
+			if (field.type === 'color') {
+				field.dispatchEvent(new Event('input', { bubbles: true }));
+			}
+		});
+
+		if (window.mrbInitColorInputs) {
+			window.mrbInitColorInputs(document);
+		}
+
+		document.querySelectorAll('.mrb-palette-card').forEach(function (card) {
+			var picker = card.querySelector('input[type="color"]');
+			var swatch = card.querySelector('.mrb-palette-card__swatch');
+			if (picker && swatch) {
+				swatch.style.backgroundColor = picker.value;
+			}
+		});
+	}
+
+	function initThemePresetSync() {
+		var applied = new URL(window.location.href).searchParams.get('theme_applied');
+		if (!applied) return;
+		var presets = (window.mrBookingAdmin && mrBookingAdmin.colorPresets) || {};
+		if (!presets[applied]) return;
+		applyColorPreset(presets[applied]);
+		setThemeActive(applied);
+	}
+
+	initThemePresetSync();
+
+	function showThemePreviewToast() {
+		var msg =
+			(window.mrBookingAdmin &&
+				mrBookingAdmin.i18n &&
+				mrBookingAdmin.i18n.themePreviewApplied) ||
+			'';
+		if (!msg) return;
+		var $toast = $('<div class="mrb-settings__toast mrb-settings__toast--inline" role="status">' +
+			'<span class="dashicons dashicons-yes-alt"></span>' + msg + '</div>');
+		$('.mrb-settings__theme-picker').first().append($toast);
+		setTimeout(function () {
+			$toast.fadeOut(200, function () {
+				$(this).remove();
+			});
+		}, 4200);
+	}
+
+	$(document).on('click', '.mrb-theme-card__preview-btn', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		var theme = $(this).data('theme');
+		var presets = (window.mrBookingAdmin && mrBookingAdmin.colorPresets) || {};
+		if (!presets[theme]) return;
+		applyColorPreset(presets[theme]);
+		setThemeActive(theme);
+		showThemePreviewToast();
+	});
+
+	$(document).on('click', '.mrb-theme-card:not(.mrb-theme-card--custom)', function (e) {
+		if ($(e.target).closest('a, button').length) return;
+		var theme = $(this).data('theme');
+		var presets = (window.mrBookingAdmin && mrBookingAdmin.colorPresets) || {};
+		if (!presets[theme]) return;
+		applyColorPreset(presets[theme]);
+		setThemeActive(theme);
+	});
+
+	$(document).on('input change', '.mrb-settings__palette input[name^="settings[color_"], .mrb-settings__palette input[name="settings[bg_gradient_primary_mix]"], .mrb-settings__palette input[name="settings[bg_gradient_accent_mix]"]', function () {
+		if (!$('#mrb-form-theme').length) return;
+		setThemeActive('custom');
+	});
+
+	/* ─── New booking notifications (admin poll) ─── */
+	(function initBookingNotifications() {
+		var cfg = window.mrBookingAdmin || {};
+		if (!cfg.pollBookings || !cfg.ajaxUrl) return;
+
+		var STORAGE_KEY = 'mrbLastBookingId';
+		var MUTE_KEY = 'mrbBookingSoundMuted';
+		var stack = null;
+
+		function ensureStack() {
+			if (stack) return stack;
+			stack = document.createElement('div');
+			stack.className = 'mrb-admin-notify-stack';
+			stack.setAttribute('aria-live', 'polite');
+			document.body.appendChild(stack);
+			return stack;
+		}
+
+		function getSinceId() {
+			var latest = parseInt(cfg.latestBookingId, 10) || 0;
+			var stored = parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
+			if (!stored || stored > latest) {
+				sessionStorage.setItem(STORAGE_KEY, String(latest));
+				return latest;
+			}
+			return stored;
+		}
+
+		function setSinceId(id) {
+			sessionStorage.setItem(STORAGE_KEY, String(id));
+		}
+
+		function playNotifySound() {
+			if (localStorage.getItem(MUTE_KEY) === '1') return;
+			try {
+				var AudioCtx = window.AudioContext || window.webkitAudioContext;
+				if (!AudioCtx) return;
+				var ctx = new AudioCtx();
+				var t = ctx.currentTime;
+				[987.77, 783.99].forEach(function (freq, i) {
+					var osc = ctx.createOscillator();
+					var gain = ctx.createGain();
+					osc.type = 'sine';
+					osc.frequency.setValueAtTime(freq, t + i * 0.1);
+					gain.gain.setValueAtTime(0.0001, t + i * 0.1);
+					gain.gain.exponentialRampToValueAtTime(0.22, t + i * 0.1 + 0.015);
+					gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.1 + 0.14);
+					osc.connect(gain);
+					gain.connect(ctx.destination);
+					osc.start(t + i * 0.1);
+					osc.stop(t + i * 0.1 + 0.15);
+				});
+				window.setTimeout(function () {
+					ctx.close();
+				}, 500);
+			} catch (e) {
+				/* ignore */
+			}
+		}
+
+		function tpl(text, vars) {
+			var out = text || '';
+			Object.keys(vars || {}).forEach(function (key) {
+				out = out.replace('%' + key + '$s', vars[key]);
+			});
+			return out;
+		}
+
+		function showBookingToast(booking) {
+			var i18n = cfg.i18n || {};
+			var el = document.createElement('div');
+			el.className = 'mrb-admin-notify';
+			el.innerHTML =
+				'<div class="mrb-admin-notify__icon" aria-hidden="true"></div>' +
+				'<div class="mrb-admin-notify__body">' +
+				'<strong>' + (i18n.newBookingTitle || 'رزرو جدید') + '</strong>' +
+				'<p>' +
+				tpl(i18n.newBookingBody || '%1$s — %2$s', {
+					1: booking.name || '',
+					2: booking.datetime || '',
+				}) +
+				'</p>' +
+				'<span class="mrb-admin-notify__meta">' +
+				(booking.code || '') +
+				' · ' +
+				(booking.status_label || '') +
+				'</span>' +
+				'</div>' +
+				'<div class="mrb-admin-notify__actions">' +
+				'<a class="button button-primary button-small" href="' +
+				(booking.url || cfg.appointmentsUrl) +
+				'">' +
+				(i18n.newBookingReload || 'مشاهده') +
+				'</a>' +
+				'<button type="button" class="button button-small mrb-admin-notify__dismiss">' +
+				(i18n.newBookingDismiss || 'بستن') +
+				'</button>' +
+				'</div>';
+
+			el.querySelector('.mrb-admin-notify__dismiss').addEventListener('click', function () {
+				el.classList.add('is-hiding');
+				window.setTimeout(function () {
+					el.remove();
+				}, 220);
+			});
+
+			ensureStack().appendChild(el);
+			window.requestAnimationFrame(function () {
+				el.classList.add('is-visible');
+			});
+
+			window.setTimeout(function () {
+				if (el.parentNode) {
+					el.classList.add('is-hiding');
+					window.setTimeout(function () {
+						el.remove();
+					}, 220);
+				}
+			}, 12000);
+		}
+
+		function poll() {
+			var sinceId = getSinceId();
+			$.post(cfg.ajaxUrl, {
+				action: 'mr_booking_admin',
+				nonce: cfg.nonce,
+				mr_action: 'check_new_bookings',
+				since_id: sinceId,
+			})
+				.done(function (res) {
+					if (!res || !res.success || !res.data) return;
+					var data = res.data;
+					var bookings = data.bookings || [];
+					if (!bookings.length) {
+						if (data.latest_id) {
+							setSinceId(Math.max(sinceId, parseInt(data.latest_id, 10) || 0));
+						}
+						return;
+					}
+
+					playNotifySound();
+					bookings.forEach(function (booking) {
+						showBookingToast(booking);
+					});
+
+					if (data.latest_id) {
+						setSinceId(parseInt(data.latest_id, 10));
+					}
+
+					document.querySelectorAll('.mrb-appt-table tbody tr, .mrb-table--recent tbody tr').forEach(function (row) {
+						row.classList.remove('is-new-flash');
+					});
+					bookings.forEach(function (booking) {
+						var row = document.querySelector('tr[data-booking-id="' + booking.id + '"]');
+						if (row) row.classList.add('is-new-flash');
+					});
+				})
+				.fail(function () {
+					/* silent */
+				});
+		}
+
+		getSinceId();
+		window.setInterval(poll, parseInt(cfg.pollIntervalMs, 10) || 30000);
+		window.setTimeout(poll, 4000);
+	})();
 })(jQuery);
