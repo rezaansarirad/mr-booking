@@ -2366,6 +2366,31 @@ body.mrb-hide-branding .mrb-setup__eyebrow {
   border-radius: 12px;
 }
 
+.mrb-appt-quick--danger {
+  flex-direction: column;
+  align-items: flex-start;
+  background: #fef2f2;
+  border-color: #fecaca;
+}
+
+.mrb-appt-quick__hint {
+  margin: 0;
+  color: #7f1d1d;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.mrb-appt-quick__actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  align-items: center;
+}
+
+.mrb-appt-slot-free {
+  margin: 0 0 18px;
+}
+
 .mrb-appt-empty {
   text-align: center;
   padding: 40px 16px;

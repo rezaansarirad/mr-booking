@@ -69,6 +69,7 @@ final class Booking_Form extends Widget_Base {
 		$this->register_style_typography();
 		$this->register_style_buttons();
 		$this->register_style_inputs();
+		$this->register_style_service_cards();
 		$this->register_style_card();
 	}
 
@@ -178,9 +179,9 @@ final class Booking_Form extends Widget_Base {
 				'label'     => __( 'پس‌زمینه کارت فرم', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
 				'selectors' => array(
-					'{{WRAPPER}} .mrb'        => '--mrb-card: {{VALUE}};',
-					'{{WRAPPER}} .mrb__shell' => 'background: {{VALUE}};',
-					'{{WRAPPER}} .mrb__footer'=> 'background: linear-gradient(to top, {{VALUE}} 70%, transparent);',
+					'{{WRAPPER}} .mrb'           => '--mrb-card: {{VALUE}};',
+					'{{WRAPPER}} .mrb__shell'    => 'background: {{VALUE}};',
+					'{{WRAPPER}} .mrb__footer'   => 'background: linear-gradient(to top, {{VALUE}} 70%, transparent);',
 				),
 			)
 		);
@@ -353,6 +354,18 @@ final class Booking_Form extends Widget_Base {
 			)
 		);
 
+		$this->add_control(
+			'btn_ghost_hover',
+			array(
+				'label'     => __( 'پس‌زمینه هاور', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                   => '--mrb-btn-ghost-hover: {{VALUE}};',
+					'{{WRAPPER}} .mrb__btn--ghost:hover' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
 		$this->add_responsive_control(
 			'btn_radius',
 			array(
@@ -409,6 +422,31 @@ final class Booking_Form extends Widget_Base {
 		);
 
 		$this->add_control(
+			'input_placeholder',
+			array(
+				'label'     => __( 'رنگ Placeholder', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb' => '--mrb-input-placeholder: {{VALUE}};',
+					'{{WRAPPER}} .mrb__fields input::placeholder, {{WRAPPER}} .mrb__fields textarea::placeholder' => 'color: {{VALUE}};',
+					'{{WRAPPER}} .mrb__birth-value.is-placeholder' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'radio_active_color',
+			array(
+				'label'     => __( 'رنگ رادیو (انتخاب‌شده)', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb' => '--mrb-radio-active: {{VALUE}};',
+					'{{WRAPPER}} .mrb__booking-for input[type="radio"]' => 'accent-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
 			'label_color',
 			array(
 				'label'     => __( 'رنگ برچسب', 'mr-booking' ),
@@ -416,18 +454,6 @@ final class Booking_Form extends Widget_Base {
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-label: {{VALUE}}; --mrb-title: {{VALUE}};',
 					'{{WRAPPER}} .mrb__fields label, {{WRAPPER}} .mrb__title, {{WRAPPER}} .mrb__section-title' => 'color: {{VALUE}};',
-				),
-			)
-		);
-
-		$this->add_control(
-			'service_text_color',
-			array(
-				'label'     => __( 'رنگ متن خدمات', 'mr-booking' ),
-				'type'      => Controls_Manager::COLOR,
-				'selectors' => array(
-					'{{WRAPPER}} .mrb' => '--mrb-service-text: {{VALUE}};',
-					'{{WRAPPER}} .mrb__service-main strong' => 'color: {{VALUE}};',
 				),
 			)
 		);
@@ -446,6 +472,153 @@ final class Booking_Form extends Widget_Base {
 				),
 				'selectors'  => array(
 					'{{WRAPPER}} .mrb__fields input, {{WRAPPER}} .mrb__fields select, {{WRAPPER}} .mrb__fields textarea' => 'border-radius: {{SIZE}}{{UNIT}};',
+				),
+			)
+		);
+
+		$this->end_controls_section();
+	}
+
+	private function register_style_service_cards(): void {
+		$this->start_controls_section(
+			'section_style_service_cards',
+			array(
+				'label' => __( 'کارت خدمات', 'mr-booking' ),
+				'tab'   => Controls_Manager::TAB_STYLE,
+			)
+		);
+
+		$this->add_control(
+			'color_service_card',
+			array(
+				'label'     => __( 'پس‌زمینه کارت', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                  => '--mrb-service-card: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service'         => 'background-color: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service-check'   => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_card_selected',
+			array(
+				'label'     => __( 'پس‌زمینه انتخاب‌شده', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                      => '--mrb-service-card-selected: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service.is-selected' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_card_border',
+			array(
+				'label'     => __( 'حاشیه کارت', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'          => '--mrb-service-card-border: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service' => 'border-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_text',
+			array(
+				'label'     => __( 'نام خدمت', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                      => '--mrb-service-text: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service-main strong' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_desc',
+			array(
+				'label'     => __( 'توضیحات خدمت', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'          => '--mrb-service-desc: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service p' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_duration_bg',
+			array(
+				'label'     => __( 'پس‌زمینه مدت زمان', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                 => '--mrb-service-duration-bg: {{VALUE}};',
+					'{{WRAPPER}} .mrb__duration-pill'  => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_duration_text',
+			array(
+				'label'     => __( 'متن مدت زمان', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                 => '--mrb-service-duration-text: {{VALUE}};',
+					'{{WRAPPER}} .mrb__duration-pill'  => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_duration_bg_selected',
+			array(
+				'label'     => __( 'کادر مدت — انتخاب‌شده', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                                      => '--mrb-service-duration-bg-selected: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service.is-selected .mrb__duration-pill' => 'background-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_price',
+			array(
+				'label'     => __( 'رنگ قیمت', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                              => '--mrb-service-price: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service-price, {{WRAPPER}} .mrb__service em' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_check_border',
+			array(
+				'label'     => __( 'حلقه انتخاب', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                => '--mrb-service-check-border: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service-check'  => 'border-color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'color_service_check_active',
+			array(
+				'label'     => __( 'تیک انتخاب‌شده', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'selectors' => array(
+					'{{WRAPPER}} .mrb'                                      => '--mrb-service-check-active: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service.is-selected'                   => 'border-color: {{VALUE}}; box-shadow: inset 0 0 0 1px {{VALUE}};',
+					'{{WRAPPER}} .mrb__service.is-selected .mrb__service-check' => 'border-color: {{VALUE}}; background-color: {{VALUE}};',
+					'{{WRAPPER}} .mrb__service.is-selected::before'         => 'background-color: {{VALUE}};',
 				),
 			)
 		);

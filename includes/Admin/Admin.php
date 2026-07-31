@@ -40,6 +40,8 @@ final class Admin {
 		add_action( 'admin_post_mr_booking_save_special', array( Pages\Holidays::class, 'save_special' ) );
 		add_action( 'admin_post_mr_booking_delete_special', array( Pages\Holidays::class, 'delete_special' ) );
 		add_action( 'admin_post_mr_booking_update_status', array( Pages\Appointments::class, 'update_status' ) );
+		add_action( 'admin_post_mr_booking_cancel_booking', array( Pages\Appointments::class, 'cancel_booking' ) );
+		add_action( 'admin_post_mr_booking_delete_booking', array( Pages\Appointments::class, 'delete_booking' ) );
 		add_action( 'admin_post_mr_booking_send_message', array( Pages\Customers::class, 'send_message' ) );
 		add_action( 'admin_post_mr_booking_save_customer', array( Pages\Customers::class, 'save' ) );
 		add_action( 'admin_post_mr_booking_hide_form_help', array( Pages\Dashboard::class, 'hide_form_help' ) );
@@ -251,10 +253,7 @@ final class Admin {
 		if ( 'update_status' === $action ) {
 			$id     = absint( $_POST['id'] ?? 0 );
 			$status = sanitize_text_field( wp_unslash( $_POST['status'] ?? '' ) );
-			$ok     = \MRBooking\Bookings\Booking_Repository::update_status( $id, $status );
-			if ( $ok ) {
-				do_action( 'mr_booking_booking_status_changed', $id, $status );
-			}
+			$ok = \MRBooking\Bookings\Booking_Repository::update_status( $id, $status );
 			wp_send_json_success( array( 'ok' => $ok ) );
 		}
 

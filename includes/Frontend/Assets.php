@@ -37,9 +37,35 @@ final class Assets {
 			?: sanitize_hex_color( (string) ( $settings['color_label'] ?? '' ) )
 			?: sanitize_hex_color( (string) ( $settings['color_text'] ?? '' ) )
 			?: '#134e4a';
+		$placeholder_color = sanitize_hex_color( (string) ( $settings['color_input_placeholder'] ?? '' ) )
+			?: '#94a3b8';
+		$service_card = sanitize_hex_color( (string) ( $settings['color_service_card'] ?? '' ) )
+			?: sanitize_hex_color( (string) ( $settings['color_card'] ?? '' ) )
+			?: '#ffffff';
+		$service_card_selected = sanitize_hex_color( (string) ( $settings['color_service_card_selected'] ?? '' ) )
+			?: '#e8f5f3';
+		$radio_active = sanitize_hex_color( (string) ( $settings['color_radio_active'] ?? '' ) )
+			?: sanitize_hex_color( (string) ( $settings['color_primary'] ?? '' ) )
+			?: '#0f766e';
+		$service_border = sanitize_hex_color( (string) ( $settings['color_service_card_border'] ?? '' ) )
+			?: sanitize_hex_color( (string) ( $settings['color_border'] ?? '' ) )
+			?: '#d1e7e3';
+		$service_desc = sanitize_hex_color( (string) ( $settings['color_service_desc'] ?? '' ) ) ?: '#64748b';
+		$duration_bg = sanitize_hex_color( (string) ( $settings['color_service_duration_bg'] ?? '' ) ) ?: '#e8f5f1';
+		$duration_text = sanitize_hex_color( (string) ( $settings['color_service_duration_text'] ?? '' ) )
+			?: sanitize_hex_color( (string) ( $settings['color_primary'] ?? '' ) )
+			?: '#0f766e';
+		$duration_bg_sel = sanitize_hex_color( (string) ( $settings['color_service_duration_bg_selected'] ?? '' ) ) ?: '#d1ede8';
+		$service_price = sanitize_hex_color( (string) ( $settings['color_service_price'] ?? '' ) )
+			?: sanitize_hex_color( (string) ( $settings['color_accent'] ?? '' ) )
+			?: '#f59e0b';
+		$check_border = sanitize_hex_color( (string) ( $settings['color_service_check_border'] ?? '' ) ) ?: $service_border;
+		$check_active = sanitize_hex_color( (string) ( $settings['color_service_check_active'] ?? '' ) )
+			?: sanitize_hex_color( (string) ( $settings['color_primary'] ?? '' ) )
+			?: '#0f766e';
 
 		return sprintf(
-			'%22$s{--mrb-primary:%1$s;--mrb-secondary:%2$s;--mrb-accent:%3$s;--mrb-button:%4$s;--mrb-button-hover:%5$s;--mrb-text:%6$s;--mrb-label:%19$s;--mrb-title:%19$s;--mrb-input-text:%20$s;--mrb-service-text:%21$s;--mrb-bg:%7$s;--mrb-card:%8$s;--mrb-border:%9$s;--mrb-holiday:%10$s;--mrb-holiday-bg:%11$s;--mrb-available:%12$s;--mrb-unavailable:%13$s;--mrb-full:%14$s;--mrb-success:%15$s;--mrb-error:%16$s;--mrb-warning:%17$s;--mrb-font:%18$s;}',
+			'%38$s{--mrb-primary:%1$s;--mrb-secondary:%2$s;--mrb-accent:%3$s;--mrb-button:%4$s;--mrb-button-hover:%5$s;--mrb-btn-text:%22$s;--mrb-btn-ghost-bg:%23$s;--mrb-btn-ghost-hover:%24$s;--mrb-btn-ghost-text:%25$s;--mrb-text:%6$s;--mrb-label:%19$s;--mrb-title:%19$s;--mrb-input-text:%20$s;--mrb-input-placeholder:%26$s;--mrb-service-text:%21$s;--mrb-service-desc:%30$s;--mrb-service-card:%27$s;--mrb-service-card-selected:%28$s;--mrb-service-card-border:%31$s;--mrb-service-duration-bg:%32$s;--mrb-service-duration-text:%33$s;--mrb-service-duration-bg-selected:%34$s;--mrb-service-price:%35$s;--mrb-service-check-border:%36$s;--mrb-service-check-active:%37$s;--mrb-radio-active:%29$s;--mrb-bg:%7$s;--mrb-card:%8$s;--mrb-border:%9$s;--mrb-holiday:%10$s;--mrb-holiday-bg:%11$s;--mrb-available:%12$s;--mrb-unavailable:%13$s;--mrb-full:%14$s;--mrb-success:%15$s;--mrb-error:%16$s;--mrb-warning:%17$s;--mrb-font:%18$s;}',
 			$settings['color_primary'],
 			$settings['color_secondary'],
 			$settings['color_accent'],
@@ -61,6 +87,22 @@ final class Assets {
 			$label,
 			$input,
 			$service,
+			sanitize_hex_color( (string) ( $settings['color_btn_text'] ?? '' ) ) ?: '#ffffff',
+			sanitize_hex_color( (string) ( $settings['color_btn_ghost_bg'] ?? '' ) ) ?: '#eef5f3',
+			sanitize_hex_color( (string) ( $settings['color_btn_ghost_hover'] ?? '' ) ) ?: '#dfece8',
+			sanitize_hex_color( (string) ( $settings['color_btn_ghost_text'] ?? '' ) ) ?: $label,
+			$placeholder_color,
+			$service_card,
+			$service_card_selected,
+			$radio_active,
+			$service_desc,
+			$service_border,
+			$duration_bg,
+			$duration_text,
+			$duration_bg_sel,
+			$service_price,
+			$check_border,
+			$check_active,
 			$selector
 		);
 	}
@@ -203,6 +245,13 @@ final class Assets {
 					'booking_for_other'  => $settings['text_booking_for_other'],
 					'closed_day'         => $settings['text_closed_day'],
 					'holiday'            => $settings['text_holiday'],
+					'ph_first_name'      => $settings['text_ph_first_name'],
+					'ph_last_name'       => $settings['text_ph_last_name'],
+					'ph_phone'           => $settings['text_ph_phone'],
+					'ph_email'           => $settings['text_ph_email'],
+					'ph_birth_date'      => $settings['text_ph_birth_date'],
+					'ph_booking_for_name'=> $settings['text_ph_booking_for_name'],
+					'ph_staff'           => $settings['text_ph_staff'],
 				),
 				'months'  => \MRBooking\Calendar\Jalali::month_names(),
 				'i18n'    => array(

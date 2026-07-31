@@ -89,10 +89,26 @@ final class Settings {
 			'color_accent'            => '#F59E0B',
 			'color_button'            => '#0F766E',
 			'color_button_hover'      => '#0D9488',
+			'color_btn_text'          => '#FFFFFF',
+			'color_btn_ghost_bg'      => '#EEF5F3',
+			'color_btn_ghost_hover'   => '#DFECE8',
+			'color_btn_ghost_text'    => '#134E4A',
 			'color_text'              => '#134E4A',
 			'color_label'             => '#134E4A',
 			'color_input_text'        => '#134E4A',
-			'color_service_text'      => '#134E4A',
+			'color_input_placeholder' => '#94A3B8',
+			'color_radio_active'      => '#0F766E',
+			'color_service_text'              => '#134E4A',
+			'color_service_desc'              => '#64748B',
+			'color_service_card'              => '#FFFFFF',
+			'color_service_card_selected'     => '#E8F5F3',
+			'color_service_card_border'       => '#D1E7E3',
+			'color_service_duration_bg'       => '#E8F5F1',
+			'color_service_duration_text'     => '#0F766E',
+			'color_service_duration_bg_selected' => '#D1EDE8',
+			'color_service_price'             => '#F59E0B',
+			'color_service_check_border'      => '#D1E7E3',
+			'color_service_check_active'      => '#0F766E',
 			'color_background'        => '#F8FAF9',
 			'color_card'              => '#FFFFFF',
 			'color_border'            => '#D1E7E3',
@@ -130,6 +146,15 @@ final class Settings {
 			'text_closed_day'         => 'تعطیل',
 			'text_holiday'            => 'تعطیل رسمی',
 
+			// Input placeholders (frontend booking form).
+			'text_ph_first_name'      => 'مثلاً: علی',
+			'text_ph_last_name'       => 'مثلاً: احمدی',
+			'text_ph_phone'           => '09121234567',
+			'text_ph_email'           => 'example@email.com',
+			'text_ph_birth_date'      => 'انتخاب تاریخ تولد',
+			'text_ph_booking_for_name'=> 'نام فرد',
+			'text_ph_staff'           => 'انتخاب پرسنل…',
+
 			// Email.
 			'email_from_name'         => get_bloginfo( 'name' ),
 			'email_from_email'        => get_option( 'admin_email' ),
@@ -151,6 +176,7 @@ final class Settings {
 			// Reminder.
 			'reminder_hours_before'   => 24,
 			'reminder_enabled'        => 1,
+			'notify_customer_on_confirm' => 1,
 
 			// Templates stored separately but defaults here for bootstrap.
 			'tpl_sms_created'           => 'سلام {customer_name}، درخواست رزرو شما برای {service_name} در تاریخ {booking_date} ساعت {booking_time} ثبت شد و در انتظار تأیید است. کد: {booking_id}',
@@ -176,12 +202,22 @@ final class Settings {
 	 * @return array<string, mixed>
 	 */
 	public static function get(): array {
-		$stored = get_option( self::OPTION_KEY, array() );
+		$defaults = self::defaults();
+		$stored   = get_option( self::OPTION_KEY, array() );
 		if ( ! is_array( $stored ) ) {
 			$stored = array();
 		}
 
-		return array_merge( self::defaults(), $stored );
+		$merged = array_merge( $defaults, $stored );
+
+		// Empty saved templates should not override built-in defaults.
+		foreach ( $defaults as $key => $value ) {
+			if ( 0 === strpos( $key, 'tpl_' ) && '' === trim( (string) ( $merged[ $key ] ?? '' ) ) ) {
+				$merged[ $key ] = $value;
+			}
+		}
+
+		return $merged;
 	}
 
 	/**

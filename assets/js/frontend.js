@@ -515,7 +515,7 @@
       prefix: 'mrb-birth',
       calendarMode: cfg.settings.calendar_mode,
       months: cfg.months,
-      placeholder: cfg.i18n.selectBirth || 'انتخاب تاریخ تولد',
+      placeholder: (cfg.texts && cfg.texts.ph_birth_date) || cfg.i18n.selectBirth || 'انتخاب تاریخ تولد',
       onChange: () => clearFieldError('birth_date'),
     });
   }
@@ -635,7 +635,7 @@
     if (staffRequired) {
       const placeholder = document.createElement('option');
       placeholder.value = '';
-      placeholder.textContent = cfg.i18n.staffPlaceholder || 'انتخاب پرسنل…';
+      placeholder.textContent = (cfg.texts && cfg.texts.ph_staff) || cfg.i18n.staffPlaceholder || 'انتخاب پرسنل…';
       placeholder.disabled = true;
       placeholder.hidden = true;
       placeholder.selected = !state.staffId;

@@ -301,4 +301,11 @@
 			}, 1200);
 		});
 	});
+
+	$(document).on('submit', '.mrb-appt-delete-form', function (e) {
+		var msg = this.getAttribute('data-confirm');
+		if (msg && !window.confirm(msg)) {
+			e.preventDefault();
+		}
+	});
 })(jQuery);

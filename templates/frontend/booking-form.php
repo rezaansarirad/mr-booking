@@ -39,23 +39,23 @@ defined( 'ABSPATH' ) || exit;
 				<div class="mrb__fields">
 					<label class="mrb-field" data-field="first_name">
 						<span class="mrb-field__label"><?php esc_html_e( 'نام', 'mr-booking' ); ?> <abbr class="mrb-req" title="<?php esc_attr_e( 'الزامی', 'mr-booking' ); ?>">*</abbr></span>
-						<input type="text" name="first_name" id="mrb-first-name" autocomplete="given-name" maxlength="100" minlength="2" required enterkeyhint="next" aria-required="true" />
+						<input type="text" name="first_name" id="mrb-first-name" autocomplete="given-name" maxlength="100" minlength="2" required enterkeyhint="next" aria-required="true" placeholder="<?php echo esc_attr( (string) ( $settings['text_ph_first_name'] ?? '' ) ); ?>" />
 						<span class="mrb-field__error" id="mrb-err-first_name" hidden></span>
 					</label>
 					<label class="mrb-field" data-field="last_name">
 						<span class="mrb-field__label"><?php esc_html_e( 'نام خانوادگی', 'mr-booking' ); ?> <abbr class="mrb-req" title="<?php esc_attr_e( 'الزامی', 'mr-booking' ); ?>">*</abbr></span>
-						<input type="text" name="last_name" id="mrb-last-name" autocomplete="family-name" maxlength="100" minlength="2" required enterkeyhint="next" aria-required="true" />
+						<input type="text" name="last_name" id="mrb-last-name" autocomplete="family-name" maxlength="100" minlength="2" required enterkeyhint="next" aria-required="true" placeholder="<?php echo esc_attr( (string) ( $settings['text_ph_last_name'] ?? '' ) ); ?>" />
 						<span class="mrb-field__error" id="mrb-err-last_name" hidden></span>
 					</label>
 					<label class="mrb-field" data-field="phone">
 						<span class="mrb-field__label"><?php esc_html_e( 'موبایل', 'mr-booking' ); ?> <abbr class="mrb-req" title="<?php esc_attr_e( 'الزامی', 'mr-booking' ); ?>">*</abbr></span>
-						<input type="tel" name="phone" id="mrb-phone" inputmode="numeric" autocomplete="tel" placeholder="09xxxxxxxxx" maxlength="13" required pattern="09[0-9]{9}" enterkeyhint="next" aria-required="true" aria-describedby="mrb-hint-phone" />
+						<input type="tel" name="phone" id="mrb-phone" inputmode="numeric" autocomplete="tel" placeholder="<?php echo esc_attr( (string) ( $settings['text_ph_phone'] ?? '09121234567' ) ); ?>" maxlength="13" required pattern="09[0-9]{9}" enterkeyhint="next" aria-required="true" aria-describedby="mrb-hint-phone" />
 						<span class="mrb-field__hint" id="mrb-hint-phone"><?php esc_html_e( 'مثال: ۰۹۱۲۱۲۳۴۵۶۷', 'mr-booking' ); ?></span>
 						<span class="mrb-field__error" id="mrb-err-phone" hidden></span>
 					</label>
 					<label class="mrb-field mrb-email-field" data-field="email">
 						<span class="mrb-field__label"><?php esc_html_e( 'ایمیل', 'mr-booking' ); ?><abbr class="mrb-req mrb-req--email" title="<?php esc_attr_e( 'الزامی', 'mr-booking' ); ?>" hidden>*</abbr></span>
-						<input type="email" name="email" id="mrb-email" autocomplete="email" maxlength="190" enterkeyhint="next" />
+						<input type="email" name="email" id="mrb-email" autocomplete="email" maxlength="190" enterkeyhint="next" placeholder="<?php echo esc_attr( (string) ( $settings['text_ph_email'] ?? '' ) ); ?>" />
 						<span class="mrb-field__error" id="mrb-err-email" hidden></span>
 					</label>
 					<?php
@@ -64,6 +64,7 @@ defined( 'ABSPATH' ) || exit;
 					$show_label = true;
 					$show_required = false;
 					$error_id = 'mrb-err-birth_date';
+					$birth_placeholder = (string) ( $settings['text_ph_birth_date'] ?? '' );
 					include MR_BOOKING_PATH . 'templates/partials/birth-date-field.php';
 					?>
 					<fieldset class="mrb__booking-for">
@@ -74,7 +75,7 @@ defined( 'ABSPATH' ) || exit;
 					</fieldset>
 					<label class="mrb-field mrb-for-name is-hidden" data-field="booking_for_name">
 						<span class="mrb-field__label"><?php esc_html_e( 'نام فرد', 'mr-booking' ); ?> <abbr class="mrb-req" title="<?php esc_attr_e( 'الزامی', 'mr-booking' ); ?>">*</abbr></span>
-						<input type="text" name="booking_for_name" id="mrb-booking-for-name" maxlength="120" enterkeyhint="next" />
+						<input type="text" name="booking_for_name" id="mrb-booking-for-name" maxlength="120" enterkeyhint="next" placeholder="<?php echo esc_attr( (string) ( $settings['text_ph_booking_for_name'] ?? '' ) ); ?>" />
 						<span class="mrb-field__error" id="mrb-err-booking_for_name" hidden></span>
 					</label>
 				</div>

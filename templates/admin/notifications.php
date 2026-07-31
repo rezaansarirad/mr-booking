@@ -111,6 +111,18 @@ $badge_labels = array(
 		<input type="hidden" name="action" value="mr_booking_save_settings" />
 		<input type="hidden" name="tab" value="notifications" />
 
+		<section class="mrb-panel mrb-notif-options">
+			<h2><?php esc_html_e( 'ارسال به مشتری', 'mr-booking' ); ?></h2>
+			<label class="mrb-switch">
+				<input type="checkbox" name="settings[notify_customer_on_confirm]" value="1" <?php checked( ! empty( $settings['notify_customer_on_confirm'] ) ); ?> />
+				<span class="mrb-switch__ui" aria-hidden="true"></span>
+				<span class="mrb-switch__copy">
+					<strong><?php esc_html_e( 'ارسال اعلان تأیید به مشتری', 'mr-booking' ); ?></strong>
+					<small><?php esc_html_e( 'بعد از تأیید رزرو توسط ادمین: اگر موبایل دارد پیامک و اگر ایمیل دارد ایمیل تأیید ارسال می‌شود.', 'mr-booking' ); ?></small>
+				</span>
+			</label>
+		</section>
+
 		<section class="mrb-panel mrb-notif-vars">
 			<div class="mrb-notif-vars__head">
 				<span class="dashicons dashicons-shortcode"></span>

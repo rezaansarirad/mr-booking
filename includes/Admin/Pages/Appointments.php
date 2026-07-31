@@ -171,8 +171,8 @@ final class Appointments {
 		$status   = sanitize_text_field( wp_unslash( $_POST['status'] ?? '' ) );
 		$redirect = sanitize_text_field( wp_unslash( $_POST['redirect'] ?? 'view' ) );
 
-		if ( $id && Booking_Repository::update_status( $id, $status ) ) {
-			do_action( 'mr_booking_booking_status_changed', $id, $status );
+		if ( $id ) {
+			Booking_Repository::update_status( $id, $status );
 		}
 
 		if ( 'list' === $redirect ) {
@@ -187,6 +187,62 @@ final class Appointments {
 		}
 
 		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-appointments&view=' . $id . '&updated=1' ) );
+		exit;
+	}
+
+	public static function cancel_booking(): void {
+		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+			wp_die( 'Forbidden' );
+		}
+		check_admin_referer( 'mr_booking_cancel_booking' );
+
+		$id       = absint( $_POST['booking_id'] ?? 0 );
+		$redirect = sanitize_text_field( wp_unslash( $_POST['redirect'] ?? 'view' ) );
+		$booking  = $id ? Booking_Repository::find( $id ) : null;
+
+		if ( $booking && Booking_Repository::is_upcoming( $booking ) && Booking_Repository::blocks_slot( (string) $booking->status ) ) {
+			Booking_Repository::update_status( $id, 'cancelled' );
+		}
+
+		if ( 'list' === $redirect ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-appointments&slot_freed=1' ) );
+			exit;
+		}
+
+		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-appointments&view=' . $id . '&slot_freed=1' ) );
+		exit;
+	}
+
+	public static function delete_booking(): void {
+		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+			wp_die( 'Forbidden' );
+		}
+		check_admin_referer( 'mr_booking_delete_booking' );
+
+		$id      = absint( $_POST['booking_id'] ?? 0 );
+		$booking = $id ? Booking_Repository::find( $id ) : null;
+
+		if ( ! $booking ) {
+			wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-appointments' ) );
+			exit;
+		}
+
+		if ( Booking_Repository::is_upcoming( $booking ) && Booking_Repository::blocks_slot( (string) $booking->status ) ) {
+			$notify = new \MRBooking\Notifications\Notification_Service();
+			$notify->notify_customer( $id, 'cancelled' );
+		}
+
+		Booking_Repository::delete_with_logs( $id );
+
+		/**
+		 * Fires after a booking is permanently deleted.
+		 *
+		 * @param int    $id      Deleted booking ID.
+		 * @param object $booking Booking object before deletion.
+		 */
+		do_action( 'mr_booking_booking_deleted', $id, $booking );
+
+		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-appointments&deleted=1&slot_freed=1' ) );
 		exit;
 	}
 }

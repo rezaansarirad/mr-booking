@@ -43,15 +43,22 @@ final class Notification_Service {
 		}
 	}
 
-	public function on_status( int $booking_id, string $status ): void {
+	public function on_status( int $booking_id, string $status, string $old_status = '' ): void {
 		$map = array(
 			'confirmed' => 'confirmed',
 			'cancelled' => 'cancelled',
 			'rejected'  => 'cancelled',
 		);
-		if ( isset( $map[ $status ] ) ) {
-			$this->notify_customer( $booking_id, $map[ $status ] );
+		if ( ! isset( $map[ $status ] ) ) {
+			return;
 		}
+
+		$event = $map[ $status ];
+		if ( 'confirmed' === $event && 'confirmed' === $old_status ) {
+			return;
+		}
+
+		$this->notify_customer( $booking_id, $event );
 	}
 
 	/**
@@ -73,27 +80,36 @@ final class Notification_Service {
 			return;
 		}
 
-		$vars     = self::vars_for_booking( $booking );
 		$settings = Settings::get();
 
+		if ( 'confirmed' === $event && empty( $settings['notify_customer_on_confirm'] ) ) {
+			return;
+		}
+
+		$vars = self::vars_for_booking( $booking );
+
 		$sms_key = 'tpl_sms_' . $event;
-		if ( ! empty( $settings['sms_enabled'] ) && ! empty( $settings[ $sms_key ] ) && ! empty( $booking->phone ) ) {
-			$msg    = Helpers::replace_vars( (string) $settings[ $sms_key ], $vars );
+		$sms_tpl = trim( (string) ( $settings[ $sms_key ] ?? '' ) );
+		if ( ! empty( $settings['sms_enabled'] ) && $sms_tpl && ! empty( $booking->phone ) && Helpers::is_valid_mobile( (string) $booking->phone ) ) {
+			$msg    = Helpers::replace_vars( $sms_tpl, $vars );
 			$result = SMS_Manager::send( (string) $booking->phone, $msg );
 			self::log( $booking_id, (int) $booking->customer_id, 'sms', (string) $booking->phone, '', $msg, $result );
 		}
 
-		$email_subj = 'tpl_email_' . $event . '_subject';
-		$email_body = 'tpl_email_' . $event . '_body';
-		if ( ! empty( $settings['email_enabled'] ) && ! empty( $booking->email ) && ! empty( $settings[ $email_subj ] ) ) {
-			$subject = Helpers::replace_vars( (string) $settings[ $email_subj ], $vars );
-			$body    = Helpers::replace_vars( (string) $settings[ $email_body ], $vars );
-			$sent    = Email_Sender::send( (string) $booking->email, $subject, $body );
+		$email_subj_key = 'tpl_email_' . $event . '_subject';
+		$email_body_key = 'tpl_email_' . $event . '_body';
+		$email          = sanitize_email( (string) ( $booking->email ?? '' ) );
+		$subject_tpl    = trim( (string) ( $settings[ $email_subj_key ] ?? '' ) );
+		$body_tpl       = trim( (string) ( $settings[ $email_body_key ] ?? '' ) );
+		if ( ! empty( $settings['email_enabled'] ) && $email && is_email( $email ) && $subject_tpl && $body_tpl ) {
+			$subject = Helpers::replace_vars( $subject_tpl, $vars );
+			$body    = Helpers::replace_vars( $body_tpl, $vars );
+			$sent    = Email_Sender::send( $email, $subject, $body );
 			self::log(
 				$booking_id,
 				(int) $booking->customer_id,
 				'email',
-				(string) $booking->email,
+				$email,
 				$subject,
 				$body,
 				array( 'ok' => $sent )

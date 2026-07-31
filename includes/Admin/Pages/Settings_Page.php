@@ -32,7 +32,8 @@ final class Settings_Page {
 			'appearance' => array( 'bg_gradient_enabled' ),
 			'sms'        => array( 'sms_enabled' ),
 			'email'      => array( 'email_enabled' ),
-			'premium'    => array( 'hide_branding' ),
+			'premium'       => array( 'hide_branding' ),
+			'notifications' => array( 'notify_customer_on_confirm' ),
 		);
 
 		return $map[ $tab ] ?? array();
@@ -94,6 +95,7 @@ final class Settings_Page {
 				'email_enabled',
 				'sms_enabled',
 				'reminder_enabled',
+				'notify_customer_on_confirm',
 				'hide_branding',
 				'bg_gradient_enabled',
 			),

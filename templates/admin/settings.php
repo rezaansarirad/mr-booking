@@ -79,9 +79,19 @@ $text_labels = array(
 	'text_holiday'            => __( 'متن تعطیل رسمی', 'mr-booking' ),
 );
 
+$placeholder_labels = array(
+	'text_ph_first_name'       => __( 'Placeholder — نام', 'mr-booking' ),
+	'text_ph_last_name'        => __( 'Placeholder — نام خانوادگی', 'mr-booking' ),
+	'text_ph_phone'            => __( 'Placeholder — موبایل', 'mr-booking' ),
+	'text_ph_email'            => __( 'Placeholder — ایمیل', 'mr-booking' ),
+	'text_ph_birth_date'       => __( 'Placeholder — تاریخ تولد', 'mr-booking' ),
+	'text_ph_booking_for_name' => __( 'Placeholder — نام فرد', 'mr-booking' ),
+	'text_ph_staff'            => __( 'Placeholder — انتخاب پرسنل', 'mr-booking' ),
+);
+
 $theme_settings = array(
 	'color_background' => array( __( 'پس‌زمینه پایه', 'mr-booking' ), __( 'رنگ زمینه اصلی زیر گرادیان‌ها', 'mr-booking' ) ),
-	'color_card'       => array( __( 'پس‌زمینه کارت', 'mr-booking' ), __( 'سطح داخلی فرم', 'mr-booking' ) ),
+	'color_card'       => array( __( 'پس‌زمینه کارت', 'mr-booking' ), __( 'سطح اصلی فرم رزرو', 'mr-booking' ) ),
 );
 
 $gradient_settings = array(
@@ -93,12 +103,28 @@ $colors = array(
 	'color_primary'       => array( __( 'اصلی', 'mr-booking' ), __( 'رنگ برند و تاکیدها', 'mr-booking' ) ),
 	'color_secondary'     => array( __( 'ثانویه', 'mr-booking' ), __( 'متن‌های پررنگ', 'mr-booking' ) ),
 	'color_accent'        => array( __( 'اکسنت', 'mr-booking' ), __( 'جزئیات برجسته', 'mr-booking' ) ),
-	'color_button'        => array( __( 'دکمه', 'mr-booking' ), __( 'پس‌زمینه دکمه اصلی', 'mr-booking' ) ),
-	'color_button_hover'  => array( __( 'هاور دکمه', 'mr-booking' ), __( 'حالت hover', 'mr-booking' ) ),
+	'color_button'        => array( __( 'دکمه ادامه', 'mr-booking' ), __( 'پس‌زمینه دکمه «ادامه» و «ثبت»', 'mr-booking' ) ),
+	'color_button_hover'  => array( __( 'هاور دکمه ادامه', 'mr-booking' ), __( 'حالت hover دکمه اصلی', 'mr-booking' ) ),
+	'color_btn_text'      => array( __( 'متن دکمه ادامه', 'mr-booking' ), __( 'رنگ نوشته دکمه اصلی', 'mr-booking' ) ),
+	'color_btn_ghost_bg'      => array( __( 'دکمه قبلی', 'mr-booking' ), __( 'پس‌زمینه دکمه «قبلی»', 'mr-booking' ) ),
+	'color_btn_ghost_hover'   => array( __( 'هاور دکمه قبلی', 'mr-booking' ), __( 'حالت hover دکمه قبلی', 'mr-booking' ) ),
+	'color_btn_ghost_text'    => array( __( 'متن دکمه قبلی', 'mr-booking' ), __( 'رنگ نوشته دکمه قبلی', 'mr-booking' ) ),
 	'color_text'          => array( __( 'متن عمومی', 'mr-booking' ), __( 'متن‌های راهنما، مراحل و بدنه فرم', 'mr-booking' ) ),
 	'color_label'         => array( __( 'برچسب و عنوان', 'mr-booking' ), __( 'عنوان فرم، برچسب فیلدها و عناوین بخش‌ها', 'mr-booking' ) ),
-	'color_input_text'    => array( __( 'متن داخل فیلد', 'mr-booking' ), __( 'رنگ نوشته داخل input، select و textarea', 'mr-booking' ) ),
-	'color_service_text'  => array( __( 'متن خدمات', 'mr-booking' ), __( 'نام و توضیح خدمات در لیست انتخاب', 'mr-booking' ) ),
+	'color_input_text'        => array( __( 'متن داخل فیلد', 'mr-booking' ), __( 'رنگ نوشته داخل input، select و textarea', 'mr-booking' ) ),
+	'color_input_placeholder' => array( __( 'Placeholder فیلد', 'mr-booking' ), __( 'رنگ متن راهنمای داخل input قبل از تایپ', 'mr-booking' ) ),
+	'color_radio_active'      => array( __( 'رادیو — انتخاب‌شده', 'mr-booking' ), __( 'رنگ دکمه رادیویی «رزرو برای» وقتی فعال است', 'mr-booking' ) ),
+	'color_service_text'               => array( __( 'نام خدمت', 'mr-booking' ), __( 'عنوان هر کارت در لیست خدمات', 'mr-booking' ) ),
+	'color_service_desc'               => array( __( 'توضیحات خدمت', 'mr-booking' ), __( 'متن توضیح زیر نام خدمت (در صورت وجود)', 'mr-booking' ) ),
+	'color_service_card'               => array( __( 'پس‌زمینه کارت', 'mr-booking' ), __( 'رنگ داخل کارت خدمت', 'mr-booking' ) ),
+	'color_service_card_selected'      => array( __( 'پس‌زمینه انتخاب‌شده', 'mr-booking' ), __( 'وقتی کاربر یک خدمت را انتخاب کرد', 'mr-booking' ) ),
+	'color_service_card_border'        => array( __( 'حاشیه کارت', 'mr-booking' ), __( 'خط دور هر کارت خدمت', 'mr-booking' ) ),
+	'color_service_duration_bg'        => array( __( 'پس‌زمینه مدت زمان', 'mr-booking' ), __( 'کادر/برچسب نمایش مدت (مثلاً ۴۵ دقیقه)', 'mr-booking' ) ),
+	'color_service_duration_text'      => array( __( 'متن مدت زمان', 'mr-booking' ), __( 'رنگ نوشته داخل کادر مدت', 'mr-booking' ) ),
+	'color_service_duration_bg_selected' => array( __( 'کادر مدت — انتخاب‌شده', 'mr-booking' ), __( 'پس‌زمینه برچسب مدت وقتی کارت انتخاب است', 'mr-booking' ) ),
+	'color_service_price'              => array( __( 'رنگ قیمت', 'mr-booking' ), __( 'نمایش قیمت روی کارت (اگر فعال باشد)', 'mr-booking' ) ),
+	'color_service_check_border'       => array( __( 'حلقه انتخاب', 'mr-booking' ), __( 'دایره انتخاب قبل از active شدن', 'mr-booking' ) ),
+	'color_service_check_active'       => array( __( 'تیک انتخاب‌شده', 'mr-booking' ), __( 'رنگ دایره وقتی خدمت انتخاب شد', 'mr-booking' ) ),
 	'color_border'        => array( __( 'حاشیه', 'mr-booking' ), __( 'خط‌ها و بوردرها', 'mr-booking' ) ),
 	'color_available'     => array( __( 'تاریخ آزاد', 'mr-booking' ), __( 'روزهای قابل رزرو', 'mr-booking' ) ),
 	'color_unavailable'   => array( __( 'تاریخ غیرفعال', 'mr-booking' ), __( 'روزهای بسته', 'mr-booking' ) ),
@@ -112,12 +138,29 @@ $color_groups = array(
 	'brand' => array(
 		'title' => __( 'برند و دکمه', 'mr-booking' ),
 		'desc'  => __( 'هویت بصری و دکمه‌های اصلی فرم', 'mr-booking' ),
-		'keys'  => array( 'color_primary', 'color_secondary', 'color_accent', 'color_button', 'color_button_hover' ),
+		'keys'  => array( 'color_primary', 'color_secondary', 'color_accent', 'color_button', 'color_button_hover', 'color_btn_text', 'color_btn_ghost_bg', 'color_btn_ghost_hover', 'color_btn_ghost_text' ),
 	),
 	'typography' => array(
 		'title' => __( 'متن و فیلدها', 'mr-booking' ),
 		'desc'  => __( 'رنگ نوشته در بخش‌های مختلف فرم', 'mr-booking' ),
-		'keys'  => array( 'color_text', 'color_label', 'color_input_text', 'color_service_text' ),
+		'keys'  => array( 'color_text', 'color_label', 'color_input_text', 'color_input_placeholder', 'color_radio_active' ),
+	),
+	'services' => array(
+		'title' => __( 'کارت خدمات', 'mr-booking' ),
+		'desc'  => __( 'رنگ‌بندی کامل لیست انتخاب خدمت در مرحله ۲ فرم رزرو', 'mr-booking' ),
+		'keys'  => array(
+			'color_service_card',
+			'color_service_card_selected',
+			'color_service_card_border',
+			'color_service_text',
+			'color_service_desc',
+			'color_service_duration_bg',
+			'color_service_duration_text',
+			'color_service_duration_bg_selected',
+			'color_service_price',
+			'color_service_check_border',
+			'color_service_check_active',
+		),
 	),
 	'surface' => array(
 		'title' => __( 'حاشیه', 'mr-booking' ),
@@ -541,6 +584,18 @@ $color_groups = array(
 									<label class="mrb-field">
 										<span class="mrb-field__label"><?php echo esc_html( $label ); ?></span>
 										<input type="text" name="settings[<?php echo esc_attr( $tk ); ?>]" value="<?php echo esc_attr( (string) ( $settings[ $tk ] ?? '' ) ); ?>" />
+									</label>
+								<?php endforeach; ?>
+							</div>
+						</section>
+						<section class="mrb-settings__section">
+							<h3><?php esc_html_e( 'Placeholder فیلدهای فرم', 'mr-booking' ); ?></h3>
+							<p class="description"><?php esc_html_e( 'متن راهنمای داخل inputها قبل از تایپ کاربر.', 'mr-booking' ); ?></p>
+							<div class="mrb-settings__grid">
+								<?php foreach ( $placeholder_labels as $pk => $label ) : ?>
+									<label class="mrb-field">
+										<span class="mrb-field__label"><?php echo esc_html( $label ); ?></span>
+										<input type="text" name="settings[<?php echo esc_attr( $pk ); ?>]" value="<?php echo esc_attr( (string) ( $settings[ $pk ] ?? '' ) ); ?>" />
 									</label>
 								<?php endforeach; ?>
 							</div>

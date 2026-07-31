@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use MRBooking\Admin\Pages\Appointments;
+use MRBooking\Bookings\Booking_Repository;
 use MRBooking\Calendar\Jalali;
 use MRBooking\Staff\Staff_Repository;
 
@@ -39,7 +40,13 @@ $total_matched = array_sum( $status_counts );
 		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد و پیام تأیید برای مشتری ارسال شد.', 'mr-booking' ); ?></p></div>
 	<?php endif; ?>
 	<?php if ( ! empty( $_GET['rejected'] ) ) : // phpcs:ignore ?>
-		<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو رد شد و پیام مربوطه برای مشتری ارسال شد.', 'mr-booking' ); ?></p></div>
+		<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو رد شد، پیام مربوطه برای مشتری ارسال شد و آن زمان برای رزرو بعدی آزاد است.', 'mr-booking' ); ?></p></div>
+	<?php endif; ?>
+	<?php if ( ! empty( $_GET['slot_freed'] ) ) : // phpcs:ignore ?>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'رزرو لغو شد و آن ساعت دوباره برای رزروهای جدید در دسترس است.', 'mr-booking' ); ?></p></div>
+	<?php endif; ?>
+	<?php if ( ! empty( $_GET['deleted'] ) ) : // phpcs:ignore ?>
+		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'رزرو حذف شد.', 'mr-booking' ); ?></p></div>
 	<?php endif; ?>
 
 	<?php if ( $booking ) : ?>
@@ -51,6 +58,9 @@ $total_matched = array_sum( $status_counts );
 		foreach ( $booking_svcs as $svc ) {
 			$svc_names[] = $svc->name;
 		}
+		$can_free_slot = Booking_Repository::is_upcoming( $booking )
+			&& Booking_Repository::blocks_slot( (string) $booking->status );
+		$slot_is_free  = in_array( (string) $booking->status, array( 'cancelled', 'rejected' ), true );
 		?>
 		<section class="mrb-appt-detail">
 			<div class="mrb-appt-detail__top">
@@ -92,8 +102,34 @@ $total_matched = array_sum( $status_counts );
 						<input type="hidden" name="action" value="mr_booking_update_status" />
 						<input type="hidden" name="booking_id" value="<?php echo esc_attr( (string) $booking->id ); ?>" />
 						<input type="hidden" name="status" value="rejected" />
-						<button class="button"><?php esc_html_e( 'رد رزرو', 'mr-booking' ); ?></button>
+						<button class="button"><?php esc_html_e( 'رد رزرو و آزاد کردن زمان', 'mr-booking' ); ?></button>
 					</form>
+				</div>
+			<?php endif; ?>
+
+			<?php if ( $can_free_slot && 'pending' !== $booking->status ) : ?>
+				<div class="mrb-appt-quick mrb-appt-quick--danger">
+					<p class="mrb-appt-quick__hint">
+						<?php esc_html_e( 'اگر مشتری کنسل کرد یا نمی‌آید، با لغو یا حذف رزرو، این ساعت دوباره برای دیگران قابل رزرو می‌شود.', 'mr-booking' ); ?>
+					</p>
+					<div class="mrb-appt-quick__actions">
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>">
+							<?php wp_nonce_field( 'mr_booking_cancel_booking' ); ?>
+							<input type="hidden" name="action" value="mr_booking_cancel_booking" />
+							<input type="hidden" name="booking_id" value="<?php echo esc_attr( (string) $booking->id ); ?>" />
+							<button class="button"><?php esc_html_e( 'لغو رزرو و آزاد کردن زمان', 'mr-booking' ); ?></button>
+						</form>
+						<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrb-appt-delete-form" data-confirm="<?php esc_attr_e( 'رزرو به‌طور کامل حذف شود؟ این ساعت برای رزرو بعدی آزاد می‌شود.', 'mr-booking' ); ?>">
+							<?php wp_nonce_field( 'mr_booking_delete_booking' ); ?>
+							<input type="hidden" name="action" value="mr_booking_delete_booking" />
+							<input type="hidden" name="booking_id" value="<?php echo esc_attr( (string) $booking->id ); ?>" />
+							<button type="submit" class="button button-link-delete"><?php esc_html_e( 'حذف کامل رزرو', 'mr-booking' ); ?></button>
+						</form>
+					</div>
+				</div>
+			<?php elseif ( $slot_is_free && Booking_Repository::is_upcoming( $booking ) ) : ?>
+				<div class="notice notice-info inline mrb-appt-slot-free">
+					<p><?php esc_html_e( 'این زمان دیگر اشغال نیست و برای رزروهای جدید آزاد است.', 'mr-booking' ); ?></p>
 				</div>
 			<?php endif; ?>
 
@@ -346,6 +382,14 @@ $total_matched = array_sum( $status_counts );
 												<input type="hidden" name="status" value="rejected" />
 												<input type="hidden" name="redirect" value="list" />
 												<button type="submit" class="button button-small"><?php esc_html_e( 'رد', 'mr-booking' ); ?></button>
+											</form>
+										<?php elseif ( 'confirmed' === $b->status && Booking_Repository::is_upcoming( $b ) ) : ?>
+											<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrb-appt-inline-action">
+												<?php wp_nonce_field( 'mr_booking_cancel_booking' ); ?>
+												<input type="hidden" name="action" value="mr_booking_cancel_booking" />
+												<input type="hidden" name="booking_id" value="<?php echo esc_attr( (string) $b->id ); ?>" />
+												<input type="hidden" name="redirect" value="list" />
+												<button type="submit" class="button button-small"><?php esc_html_e( 'لغو', 'mr-booking' ); ?></button>
 											</form>
 										<?php endif; ?>
 										<a class="button button-small" href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-appointments&view=' . $b->id ) ); ?>">

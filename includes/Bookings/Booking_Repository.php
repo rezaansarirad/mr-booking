@@ -206,6 +206,34 @@ final class Booking_Repository {
 	}
 
 	/**
+	 * Statuses that occupy a bookable time slot.
+	 *
+	 * @return list<string>
+	 */
+	public static function slot_blocking_statuses(): array {
+		return array( 'pending', 'confirmed', 'completed', 'no_show' );
+	}
+
+	/**
+	 * Whether a booking still blocks its time slot.
+	 */
+	public static function blocks_slot( string $status ): bool {
+		return in_array( $status, self::slot_blocking_statuses(), true );
+	}
+
+	/**
+	 * Whether the booking start time is still in the future.
+	 */
+	public static function is_upcoming( object $booking ): bool {
+		try {
+			$start = new \DateTimeImmutable( (string) $booking->start_datetime, wp_timezone() );
+			return $start > new \DateTimeImmutable( 'now', wp_timezone() );
+		} catch ( \Exception $e ) {
+			return false;
+		}
+	}
+
+	/**
 	 * Overlapping active bookings for a staff (or any) on a datetime range.
 	 *
 	 * @return list<object>
@@ -225,12 +253,14 @@ final class Booking_Repository {
 			}
 		}
 
+		$blocking = self::slot_blocking_statuses();
+		$placeholders = implode( ', ', array_fill( 0, count( $blocking ), '%s' ) );
 		$where  = array(
-			"status NOT IN ('cancelled','rejected')",
+			"status IN ({$placeholders})",
 			'start_datetime < %s',
 			'end_datetime > %s',
 		);
-		$params = array( $end, $start );
+		$params = array_merge( $blocking, array( $end, $start ) );
 
 		if ( $staff_id ) {
 			$where[]  = 'staff_id = %d';
@@ -256,11 +286,13 @@ final class Booking_Repository {
 		global $wpdb;
 		$b = Helpers::table( 'bookings' );
 
+		$blocking = self::slot_blocking_statuses();
+		$placeholders = implode( ', ', array_fill( 0, count( $blocking ), '%s' ) );
 		$where  = array(
 			'DATE(start_datetime) = %s',
-			"status NOT IN ('cancelled','rejected')",
+			"status IN ({$placeholders})",
 		);
-		$params = array( $ymd );
+		$params = array_merge( array( $ymd ), $blocking );
 
 		if ( $staff_id ) {
 			$where[]  = 'staff_id = %d';
@@ -326,7 +358,17 @@ final class Booking_Repository {
 			return false;
 		}
 
-		return false !== $wpdb->update(
+		$current = self::find( $id );
+		if ( ! $current ) {
+			return false;
+		}
+
+		$old_status = (string) $current->status;
+		if ( $old_status === $status ) {
+			return true;
+		}
+
+		$updated = $wpdb->update(
 			Helpers::table( 'bookings' ),
 			array(
 				'status'     => $status,
@@ -336,6 +378,21 @@ final class Booking_Repository {
 			array( '%s', '%s' ),
 			array( '%d' )
 		);
+
+		if ( false === $updated ) {
+			return false;
+		}
+
+		/**
+		 * Fires when a booking status changes.
+		 *
+		 * @param int    $id         Booking ID.
+		 * @param string $status     New status.
+		 * @param string $old_status Previous status.
+		 */
+		do_action( 'mr_booking_booking_status_changed', $id, $status, $old_status );
+
+		return true;
 	}
 
 	/**
@@ -351,7 +408,29 @@ final class Booking_Repository {
 	public static function delete( int $id ): bool {
 		global $wpdb;
 		$wpdb->delete( Helpers::table( 'booking_services' ), array( 'booking_id' => $id ), array( '%d' ) );
-		return false !== $wpdb->delete( Helpers::table( 'bookings' ), array( 'id' => $id ), array( '%d' ) );
+		$deleted = $wpdb->delete( Helpers::table( 'bookings' ), array( 'id' => $id ), array( '%d' ) );
+
+		return false !== $deleted;
+	}
+
+	/**
+	 * Delete booking and related rows (keeps notification log history).
+	 */
+	public static function delete_with_logs( int $id ): bool {
+		if ( ! self::delete( $id ) ) {
+			return false;
+		}
+
+		global $wpdb;
+		$wpdb->update(
+			Helpers::table( 'notification_logs' ),
+			array( 'booking_id' => null ),
+			array( 'booking_id' => $id ),
+			array( '%d' ),
+			array( '%d' )
+		);
+
+		return true;
 	}
 
 	public static function generate_code(): string {
