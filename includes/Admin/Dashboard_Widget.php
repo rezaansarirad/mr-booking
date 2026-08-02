@@ -112,6 +112,7 @@ final class Dashboard_Widget {
 		$out = array(
 			'dashboard_widget_enabled'  => 1,
 			'dashboard_show_form_help'  => 1,
+			'admin_notify_poll_seconds' => 30,
 		);
 		foreach ( self::items() as $key => $meta ) {
 			$out[ self::setting_key( $key ) ] = (int) $meta['default'];

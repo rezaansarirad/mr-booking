@@ -13,6 +13,7 @@ use MRBooking\Export\Exporter;
 use MRBooking\Bookings\Booking_Repository;
 use MRBooking\Helpers;
 use MRBooking\Settings\Color_Presets;
+use MRBooking\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -149,6 +150,11 @@ final class Admin {
 			true
 		);
 
+		$notify_poll_seconds = max( 0, (int) Settings::get_value( 'admin_notify_poll_seconds', 30 ) );
+		if ( $notify_poll_seconds > 0 ) {
+			$notify_poll_seconds = max( 15, min( 600, $notify_poll_seconds ) );
+		}
+
 		wp_localize_script(
 			'mr-booking-admin',
 			'mrBookingAdmin',
@@ -156,11 +162,11 @@ final class Admin {
 				array(
 					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 					'nonce'   => wp_create_nonce( 'mr_booking_admin' ),
-					'pollBookings'    => false !== strpos( $hook, 'mr-booking' ),
+					'pollBookings'    => false !== strpos( $hook, 'mr-booking' ) && $notify_poll_seconds > 0,
 					'latestBookingId' => Booking_Repository::latest_id(),
 					'appointmentsUrl' => admin_url( 'admin.php?page=mr-booking-appointments' ),
 					'dashboardUrl'    => admin_url( 'admin.php?page=mr-booking' ),
-					'pollIntervalMs'  => 30000,
+					'pollIntervalMs'  => $notify_poll_seconds > 0 ? $notify_poll_seconds * 1000 : 0,
 					'i18n'    => array(
 						'confirmDelete'       => __( 'آیا مطمئن هستید؟', 'mr-booking' ),
 						'saved'               => __( 'ذخیره شد.', 'mr-booking' ),

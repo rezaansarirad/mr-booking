@@ -361,6 +361,32 @@ $color_groups = array(
 							</div>
 						</section>
 						<section class="mrb-settings__section">
+							<h3><?php esc_html_e( 'اعلان زنده رزرو جدید', 'mr-booking' ); ?></h3>
+							<p class="mrb-settings__hint"><?php esc_html_e( 'در صفحات MR Booking هر چند ثانیه یک‌بار رزروهای جدید بررسی و با صدا و toast نمایش داده می‌شوند.', 'mr-booking' ); ?></p>
+							<div class="mrb-settings__grid">
+								<label class="mrb-field">
+									<span><?php esc_html_e( 'فاصله بررسی', 'mr-booking' ); ?></span>
+									<select name="settings[admin_notify_poll_seconds]">
+										<?php
+										$poll_opts = array(
+											0   => __( 'غیرفعال', 'mr-booking' ),
+											15  => __( 'هر ۱۵ ثانیه', 'mr-booking' ),
+											30  => __( 'هر ۳۰ ثانیه (پیش‌فرض)', 'mr-booking' ),
+											60  => __( 'هر ۱ دقیقه', 'mr-booking' ),
+											120 => __( 'هر ۲ دقیقه', 'mr-booking' ),
+											300 => __( 'هر ۵ دقیقه', 'mr-booking' ),
+										);
+										$poll_val = (int) ( $settings['admin_notify_poll_seconds'] ?? 30 );
+										foreach ( $poll_opts as $sec => $label ) :
+											?>
+											<option value="<?php echo esc_attr( (string) $sec ); ?>" <?php selected( $poll_val, $sec ); ?>><?php echo esc_html( $label ); ?></option>
+										<?php endforeach; ?>
+									</select>
+									<small><?php esc_html_e( 'بعد از ذخیره، صفحهٔ باز MR Booking را یک‌بار رفرش کنید.', 'mr-booking' ); ?></small>
+								</label>
+							</div>
+						</section>
+						<section class="mrb-settings__section">
 							<h3><?php esc_html_e( 'ویجت پیشخوان وردپرس', 'mr-booking' ); ?></h3>
 							<div class="mrb-settings__toggles">
 								<label class="mrb-switch">

@@ -380,8 +380,55 @@
 		if (!cfg.pollBookings || !cfg.ajaxUrl) return;
 
 		var STORAGE_KEY = 'mrbLastBookingId';
+		var SEEN_KEY = 'mrbSeenBookingIds';
 		var MUTE_KEY = 'mrbBookingSoundMuted';
 		var stack = null;
+		var seenIds = {};
+		var polling = false;
+
+		function loadSeenIds() {
+			try {
+				var raw = sessionStorage.getItem(SEEN_KEY);
+				if (!raw) return;
+				JSON.parse(raw).forEach(function (id) {
+					id = parseInt(id, 10);
+					if (id) seenIds[id] = true;
+				});
+			} catch (e) {
+				seenIds = {};
+			}
+		}
+
+		function persistSeenIds() {
+			var ids = Object.keys(seenIds)
+				.map(function (k) {
+					return parseInt(k, 10);
+				})
+				.filter(Boolean)
+				.sort(function (a, b) {
+					return a - b;
+				});
+			if (ids.length > 200) {
+				ids = ids.slice(-200);
+				seenIds = {};
+				ids.forEach(function (id) {
+					seenIds[id] = true;
+				});
+			}
+			sessionStorage.setItem(SEEN_KEY, JSON.stringify(ids));
+		}
+
+		function isBookingSeen(id) {
+			return !!seenIds[parseInt(id, 10)];
+		}
+
+		function markBookingSeen(id) {
+			id = parseInt(id, 10);
+			if (!id) return;
+			seenIds[id] = true;
+			persistSeenIds();
+			setSinceId(id);
+		}
 
 		function ensureStack() {
 			if (stack) return stack;
@@ -393,17 +440,23 @@
 		}
 
 		function getSinceId() {
-			var latest = parseInt(cfg.latestBookingId, 10) || 0;
 			var stored = parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
-			if (!stored || stored > latest) {
-				sessionStorage.setItem(STORAGE_KEY, String(latest));
-				return latest;
-			}
-			return stored;
+			if (stored) return stored;
+			var latest = parseInt(cfg.latestBookingId, 10) || 0;
+			sessionStorage.setItem(STORAGE_KEY, String(latest));
+			return latest;
 		}
 
 		function setSinceId(id) {
-			sessionStorage.setItem(STORAGE_KEY, String(id));
+			id = parseInt(id, 10) || 0;
+			if (!id) return;
+			var current = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0', 10) || 0;
+			if (id > current) {
+				sessionStorage.setItem(STORAGE_KEY, String(id));
+			}
+			if (id > (parseInt(cfg.latestBookingId, 10) || 0)) {
+				cfg.latestBookingId = id;
+			}
 		}
 
 		function playNotifySound() {
@@ -474,11 +527,19 @@
 				'</div>';
 
 			el.querySelector('.mrb-admin-notify__dismiss').addEventListener('click', function () {
+				markBookingSeen(booking.id);
 				el.classList.add('is-hiding');
 				window.setTimeout(function () {
 					el.remove();
 				}, 220);
 			});
+
+			var viewLink = el.querySelector('.mrb-admin-notify__actions a');
+			if (viewLink) {
+				viewLink.addEventListener('click', function () {
+					markBookingSeen(booking.id);
+				});
+			}
 
 			ensureStack().appendChild(el);
 			window.requestAnimationFrame(function () {
@@ -496,6 +557,9 @@
 		}
 
 		function poll() {
+			if (polling) return;
+			polling = true;
+
 			var sinceId = getSinceId();
 			$.post(cfg.ajaxUrl, {
 				action: 'mr_booking_admin',
@@ -506,22 +570,35 @@
 				.done(function (res) {
 					if (!res || !res.success || !res.data) return;
 					var data = res.data;
-					var bookings = data.bookings || [];
+					var latestId = parseInt(data.latest_id, 10) || 0;
+					if (latestId) {
+						cfg.latestBookingId = latestId;
+					}
+
+					var bookings = (data.bookings || []).filter(function (booking) {
+						return booking && booking.id && !isBookingSeen(booking.id);
+					});
+
 					if (!bookings.length) {
-						if (data.latest_id) {
-							setSinceId(Math.max(sinceId, parseInt(data.latest_id, 10) || 0));
+						if (latestId) {
+							setSinceId(Math.max(sinceId, latestId));
 						}
 						return;
 					}
 
 					playNotifySound();
 					bookings.forEach(function (booking) {
+						markBookingSeen(booking.id);
 						showBookingToast(booking);
 					});
 
-					if (data.latest_id) {
-						setSinceId(parseInt(data.latest_id, 10));
+					var maxId = bookings.reduce(function (max, booking) {
+						return Math.max(max, parseInt(booking.id, 10) || 0);
+					}, sinceId);
+					if (latestId) {
+						maxId = Math.max(maxId, latestId);
 					}
+					setSinceId(maxId);
 
 					document.querySelectorAll('.mrb-appt-table tbody tr, .mrb-table--recent tbody tr').forEach(function (row) {
 						row.classList.remove('is-new-flash');
@@ -533,9 +610,13 @@
 				})
 				.fail(function () {
 					/* silent */
+				})
+				.always(function () {
+					polling = false;
 				});
 		}
 
+		loadSeenIds();
 		getSinceId();
 		window.setInterval(poll, parseInt(cfg.pollIntervalMs, 10) || 30000);
 		window.setTimeout(poll, 4000);

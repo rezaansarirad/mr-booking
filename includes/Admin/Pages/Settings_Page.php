@@ -76,6 +76,7 @@ final class Settings_Page {
 			'break_between_appointments',
 			'bg_gradient_primary_mix',
 			'bg_gradient_accent_mix',
+			'admin_notify_poll_seconds',
 		);
 
 		$bool_keys = array_merge(
@@ -109,6 +110,14 @@ final class Settings_Page {
 				$data[ $key ] = absint( $value );
 				if ( in_array( $key, array( 'bg_gradient_primary_mix', 'bg_gradient_accent_mix' ), true ) ) {
 					$data[ $key ] = max( 0, min( 100, (int) $data[ $key ] ) );
+				}
+				if ( 'admin_notify_poll_seconds' === $key ) {
+					$secs = (int) $data[ $key ];
+					if ( $secs > 0 ) {
+						$data[ $key ] = max( 15, min( 600, $secs ) );
+					} else {
+						$data[ $key ] = 0;
+					}
 				}
 			} elseif ( in_array( $key, $bool_keys, true ) ) {
 				$data[ $key ] = ! empty( $value ) ? 1 : 0;
