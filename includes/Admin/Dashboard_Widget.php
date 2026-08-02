@@ -134,9 +134,7 @@ final class Dashboard_Widget {
 
 		wp_add_dashboard_widget(
 			'mr_booking_activity',
-			\MRBooking\Premium\License::hide_branding()
-				? __( 'خلاصه فعالیت رزرو', 'mr-booking' )
-				: __( 'MR Booking — خلاصه فعالیت', 'mr-booking' ),
+			__( 'MR Booking — خلاصه فعالیت', 'mr-booking' ),
 			array( $this, 'render' ),
 			array( $this, 'control' )
 		);
@@ -169,10 +167,7 @@ final class Dashboard_Widget {
 			);
 		}
 
-		$dash_hint = \MRBooking\Premium\License::hide_branding()
-			? __( 'همچنین می‌توانید این گزینه‌ها را از تنظیمات رزرو مدیریت کنید.', 'mr-booking' )
-			: __( 'همچنین می‌توانید این گزینه‌ها را از تنظیمات MR Booking مدیریت کنید.', 'mr-booking' );
-		echo '<p class="description">' . esc_html( $dash_hint ) . '</p>';
+		echo '<p class="description">' . esc_html__( 'همچنین می‌توانید این گزینه‌ها را از تنظیمات MR Booking مدیریت کنید.', 'mr-booking' ) . '</p>';
 	}
 
 	public function render(): void {

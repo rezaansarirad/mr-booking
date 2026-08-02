@@ -9,7 +9,8 @@ defined( 'ABSPATH' ) || exit;
 
 use MRBooking\Admin\Pages\Appointments;
 use MRBooking\Bookings\Booking_Repository;
-use MRBooking\Calendar\Jalali;
+use MRBooking\Helpers;
+use MRBooking\Holidays\Holiday_Repository;
 use MRBooking\Staff\Staff_Repository;
 
 $total_matched = array_sum( $status_counts );
@@ -76,6 +77,8 @@ $total_matched = array_sum( $status_counts );
 		$date_ymd   = substr( (string) $booking->start_datetime, 0, 10 );
 		$time_start = substr( (string) $booking->start_datetime, 11, 5 );
 		$time_end   = substr( (string) $booking->end_datetime, 11, 5 );
+		$holiday    = Holiday_Repository::find_by_date( $date_ymd );
+		$is_official_holiday = $holiday && ! empty( $holiday->is_official );
 		$svc_names  = array();
 		foreach ( $booking_svcs as $svc ) {
 			$svc_names[] = $svc->name;
@@ -158,8 +161,18 @@ $total_matched = array_sum( $status_counts );
 			<div class="mrb-appt-detail__grid">
 				<div class="mrb-appt-card">
 					<span class="mrb-appt-card__label"><?php esc_html_e( 'زمان نوبت', 'mr-booking' ); ?></span>
-					<strong><?php echo esc_html( Jalali::dual_label( $date_ymd ) ); ?></strong>
-					<p><?php echo esc_html( $time_start . ' — ' . $time_end ); ?></p>
+					<strong><?php echo esc_html( Helpers::format_admin_dual_date( $date_ymd ) ); ?></strong>
+					<p><?php echo esc_html( Helpers::format_admin_time( $booking->start_datetime ) . ' — ' . Helpers::format_admin_time( $booking->end_datetime ) ); ?></p>
+					<?php if ( $is_official_holiday ) : ?>
+						<p class="mrb-appt-holiday-badge-wrap">
+							<span class="mrb-badge mrb-badge--holiday" title="<?php echo esc_attr( (string) $holiday->title ); ?>">
+								<?php esc_html_e( 'تعطیل رسمی', 'mr-booking' ); ?>
+								<?php if ( ! empty( $holiday->title ) ) : ?>
+									— <?php echo esc_html( (string) $holiday->title ); ?>
+								<?php endif; ?>
+							</span>
+						</p>
+					<?php endif; ?>
 				</div>
 				<div class="mrb-appt-card">
 					<span class="mrb-appt-card__label"><?php esc_html_e( 'مشتری', 'mr-booking' ); ?></span>
@@ -186,7 +199,7 @@ $total_matched = array_sum( $status_counts );
 				</div>
 				<div class="mrb-appt-card">
 					<span class="mrb-appt-card__label"><?php esc_html_e( 'جزئیات ثبت', 'mr-booking' ); ?></span>
-					<strong><?php echo esc_html( (string) ( $booking->created_at ?? '—' ) ); ?></strong>
+					<strong><?php echo esc_html( ! empty( $booking->created_at ) ? Helpers::format_admin_datetime( (string) $booking->created_at ) : '—' ); ?></strong>
 					<p>
 						<?php
 						if ( ! empty( $booking->notes ) ) {
@@ -367,13 +380,15 @@ $total_matched = array_sum( $status_counts );
 								$ymd   = substr( (string) $b->start_datetime, 0, 10 );
 								$start = substr( (string) $b->start_datetime, 11, 5 );
 								$end   = substr( (string) $b->end_datetime, 11, 5 );
+								$row_holiday = Holiday_Repository::find_by_date( $ymd );
+								$row_official = $row_holiday && ! empty( $row_holiday->is_official );
 								?>
 								<tr data-booking-id="<?php echo esc_attr( (string) $b->id ); ?>">
 									<td>
 										<code class="mrb-appt-code"><?php echo esc_html( $b->booking_code ); ?></code>
 									</td>
 									<td class="mrb-appt-created">
-										<span><?php echo esc_html( substr( (string) ( $b->created_at ?? '' ), 0, 16 ) ); ?></span>
+										<span><?php echo esc_html( ! empty( $b->created_at ) ? Helpers::format_admin_datetime( (string) $b->created_at ) : '—' ); ?></span>
 									</td>
 									<td>
 										<strong class="mrb-appt-customer"><?php echo esc_html( trim( $b->first_name . ' ' . $b->last_name ) ); ?></strong>
@@ -382,9 +397,14 @@ $total_matched = array_sum( $status_counts );
 									<td><?php echo esc_html( $b->service_names ?: '—' ); ?></td>
 									<td><?php echo esc_html( $b->staff_name ?: '—' ); ?></td>
 									<td class="mrb-appt-time">
-										<strong><?php echo esc_html( Jalali::format_from_date( $ymd ) ); ?></strong>
-										<span><?php echo esc_html( $start . ' – ' . $end ); ?></span>
-										<small><?php echo esc_html( $ymd ); ?></small>
+										<strong><?php echo esc_html( Helpers::format_admin_date( $ymd ) ); ?></strong>
+										<span><?php echo esc_html( Helpers::format_admin_time( $b->start_datetime ) . ' – ' . Helpers::format_admin_time( $b->end_datetime ) ); ?></span>
+										<?php if ( $row_official ) : ?>
+											<span class="mrb-badge mrb-badge--holiday mrb-appt-time__holiday"><?php esc_html_e( 'تعطیل رسمی', 'mr-booking' ); ?></span>
+										<?php endif; ?>
+										<?php if ( 'both' === Helpers::admin_calendar_mode() ) : ?>
+											<small><?php echo esc_html( $ymd ); ?></small>
+										<?php endif; ?>
 									</td>
 									<td>
 										<span class="mrb-badge mrb-badge--<?php echo esc_attr( $b->status ); ?>">

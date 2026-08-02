@@ -144,26 +144,234 @@ final class Helpers {
 	}
 
 	/**
-	 * Format booking datetime for admin display (respects calendar_mode).
+	 * Whether WP-Parsidate (or compatible) Persian calendar is active.
+	 */
+	public static function wp_persian_calendar_active(): bool {
+		if ( ! function_exists( 'parsidate' ) ) {
+			return false;
+		}
+
+		$settings = get_option( 'wpp_settings', array() );
+		if ( is_array( $settings ) && isset( $settings['conv_dates'] ) && 'disable' === $settings['conv_dates'] ) {
+			return false;
+		}
+
+		return true;
+	}
+
+	/**
+	 * Admin display calendar mode (WordPress locale / Parsidate, then plugin fallback).
+	 *
+	 * @return 'jalali'|'gregorian'|'both'
+	 */
+	public static function admin_calendar_mode(): string {
+		if ( self::wp_persian_calendar_active() ) {
+			return 'jalali';
+		}
+
+		$locale = function_exists( 'get_user_locale' ) && is_admin()
+			? get_user_locale()
+			: get_locale();
+
+		if ( 0 === strpos( strtolower( (string) $locale ), 'fa' ) ) {
+			return 'jalali';
+		}
+
+		$mode = Settings\Settings::get_value( 'calendar_mode', 'jalali' );
+
+		return in_array( $mode, array( 'jalali', 'gregorian', 'both' ), true ) ? $mode : 'jalali';
+	}
+
+	/**
+	 * Format Y-m-d for admin display.
+	 */
+	public static function format_admin_date( string $ymd ): string {
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $ymd ) ) {
+			return self::maybe_localize_digits( $ymd );
+		}
+
+		$mode = self::admin_calendar_mode();
+		$ts   = self::timestamp_from_ymd( $ymd );
+
+		if ( 'gregorian' === $mode ) {
+			return self::maybe_localize_digits( wp_date( get_option( 'date_format' ), $ts, wp_timezone() ) );
+		}
+
+		$formatted = self::format_jalali_with_wp_format( $ts, $ymd );
+		if ( 'both' === $mode ) {
+			$greg = wp_date( get_option( 'date_format' ), $ts, wp_timezone() );
+
+			return self::maybe_localize_digits( $formatted . ' (' . $greg . ')' );
+		}
+
+		return self::maybe_localize_digits( $formatted );
+	}
+
+	/**
+	 * Long admin date label (weekday + date); dual line when mode is both.
+	 */
+	public static function format_admin_dual_date( string $ymd ): string {
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $ymd ) ) {
+			return self::maybe_localize_digits( $ymd );
+		}
+
+		$mode = self::admin_calendar_mode();
+		$ts   = self::timestamp_from_ymd( $ymd );
+
+		if ( 'gregorian' === $mode ) {
+			return self::maybe_localize_digits( wp_date( get_option( 'date_format' ), $ts, wp_timezone() ) );
+		}
+
+		$fa = self::jalali_long_label( $ymd );
+		if ( 'both' === $mode ) {
+			$en = wp_date( get_option( 'date_format' ), $ts, wp_timezone() );
+
+			return self::maybe_localize_digits( $fa . "\n" . $en );
+		}
+
+		return self::maybe_localize_digits( $fa );
+	}
+
+	/**
+	 * Format time portion for admin display (respects WordPress time_format).
+	 */
+	public static function format_admin_time( string $datetime ): string {
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}/', $datetime ) ) {
+			$ts = self::timestamp_from_datetime( $datetime );
+			if ( $ts ) {
+				return self::maybe_localize_digits( wp_date( get_option( 'time_format' ), $ts, wp_timezone() ) );
+			}
+		}
+
+		$time = strlen( $datetime ) >= 16 ? substr( $datetime, 11, 5 ) : substr( $datetime, 0, 5 );
+
+		return self::maybe_localize_digits( $time );
+	}
+
+	/**
+	 * Format MySQL datetime for admin display.
+	 */
+	public static function format_admin_datetime( string $datetime ): string {
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}/', $datetime ) ) {
+			return self::maybe_localize_digits( $datetime );
+		}
+
+		return trim( self::format_admin_date( substr( $datetime, 0, 10 ) ) . ' ' . self::format_admin_time( $datetime ) );
+	}
+
+	/**
+	 * Format booking datetime for admin display (WordPress date/time settings).
 	 */
 	public static function format_booking_datetime( string $datetime ): string {
-		$date = substr( $datetime, 0, 10 );
-		$time = substr( $datetime, 11, 5 );
-		if ( ! $date || ! $time ) {
-			return self::to_persian_digits( $datetime );
+		return self::format_admin_datetime( $datetime );
+	}
+
+	/**
+	 * Format date for customer-facing messages (plugin calendar_mode).
+	 */
+	public static function format_customer_date( string $ymd ): string {
+		if ( ! preg_match( '/^\d{4}-\d{2}-\d{2}$/', $ymd ) ) {
+			return self::to_persian_digits( $ymd );
 		}
 
 		$mode = Settings\Settings::get_value( 'calendar_mode', 'jalali' );
 
 		if ( 'gregorian' === $mode ) {
-			$date_label = $date;
-		} elseif ( 'both' === $mode ) {
-			$date_label = Calendar\Jalali::format_from_date( $date ) . ' (' . $date . ')';
-		} else {
-			$date_label = Calendar\Jalali::format_from_date( $date );
+			$ts = self::timestamp_from_ymd( $ymd );
+
+			return self::to_persian_digits( wp_date( get_option( 'date_format' ), $ts, wp_timezone() ) );
 		}
 
-		return self::to_persian_digits( trim( $date_label . ' ' . $time ) );
+		if ( 'both' === $mode ) {
+			return self::to_persian_digits( Calendar\Jalali::dual_label( $ymd ) );
+		}
+
+		return self::to_persian_digits( Calendar\Jalali::format_from_date( $ymd ) );
+	}
+
+	/**
+	 * Format time for customer-facing messages.
+	 */
+	public static function format_customer_time( string $datetime ): string {
+		if ( preg_match( '/^\d{4}-\d{2}-\d{2}/', $datetime ) ) {
+			$ts = self::timestamp_from_datetime( $datetime );
+			if ( $ts ) {
+				return self::to_persian_digits( wp_date( get_option( 'time_format' ), $ts, wp_timezone() ) );
+			}
+		}
+
+		$time = strlen( $datetime ) >= 16 ? substr( $datetime, 11, 5 ) : substr( $datetime, 0, 5 );
+
+		return self::to_persian_digits( $time );
+	}
+
+	/**
+	 * Unix timestamp from Y-m-d in site timezone.
+	 */
+	private static function timestamp_from_ymd( string $ymd, int $hour = 12, int $minute = 0 ): int {
+		$tz  = wp_timezone();
+		$dt  = \DateTimeImmutable::createFromFormat( 'Y-m-d H:i', sprintf( '%s %02d:%02d', $ymd, $hour, $minute ), $tz );
+
+		return $dt ? $dt->getTimestamp() : (int) strtotime( $ymd . ' 12:00:00' );
+	}
+
+	/**
+	 * Unix timestamp from MySQL datetime in site timezone.
+	 */
+	private static function timestamp_from_datetime( string $datetime ): int {
+		$tz = wp_timezone();
+		$dt = \DateTimeImmutable::createFromFormat( 'Y-m-d H:i:s', $datetime, $tz );
+		if ( ! $dt ) {
+			$dt = \DateTimeImmutable::createFromFormat( 'Y-m-d H:i', substr( $datetime, 0, 16 ), $tz );
+		}
+
+		return $dt ? $dt->getTimestamp() : (int) strtotime( $datetime );
+	}
+
+	/**
+	 * Jalali date label with weekday (fallback when Parsidate is unavailable).
+	 */
+	private static function jalali_long_label( string $ymd ): string {
+		$ts = self::timestamp_from_ymd( $ymd );
+		if ( ! $ts ) {
+			return Calendar\Jalali::format_from_date( $ymd );
+		}
+
+		$w     = (int) wp_date( 'w', $ts, wp_timezone() );
+		$parts = explode( '-', $ymd );
+		[ $jy, $jm, $jd ] = Calendar\Jalali::from_gregorian( (int) $parts[0], (int) $parts[1], (int) $parts[2] );
+		$months = Calendar\Jalali::month_names();
+
+		return Calendar\Jalali::weekday_fa()[ $w ] . ' ' . $jd . ' ' . $months[ $jm ] . ' ' . $jy;
+	}
+
+	/**
+	 * Format Jalali date using WP date_format when Parsidate is available.
+	 */
+	private static function format_jalali_with_wp_format( int $timestamp, string $ymd ): string {
+		if ( function_exists( 'parsidate' ) ) {
+			$lang   = self::use_persian_digits() ? 'per' : 'eng';
+			$result = parsidate( get_option( 'date_format' ), $timestamp, $lang );
+			if ( is_string( $result ) && '' !== $result ) {
+				return $result;
+			}
+		}
+
+		return self::jalali_long_label( $ymd );
+	}
+
+	/**
+	 * Use Persian digits in admin when not in pure Gregorian mode.
+	 */
+	private static function use_persian_digits(): bool {
+		return 'gregorian' !== self::admin_calendar_mode();
+	}
+
+	/**
+	 * Localize digits for admin display context.
+	 */
+	private static function maybe_localize_digits( string $value ): string {
+		return self::use_persian_digits() ? self::to_persian_digits( $value ) : $value;
 	}
 
 	/**
@@ -299,5 +507,24 @@ final class Helpers {
 		$color_val = self::normalize_hex_color( (string) ( $settings[ $key ] ?? '#000000' ), '#000000' );
 
 		include MR_BOOKING_PATH . 'templates/admin/partials/palette-color-card.php';
+	}
+
+	/**
+	 * Admin menu / panel title following the WordPress site locale.
+	 */
+	public static function plugin_name(): string {
+		$translated = __( 'Booking Form', 'mr-booking' );
+
+		if ( 'Booking Form' !== $translated ) {
+			return $translated;
+		}
+
+		return self::is_persian_locale() ? 'رزروها' : 'Booking Form';
+	}
+
+	public static function is_persian_locale(): bool {
+		$locale = function_exists( 'determine_locale' ) ? determine_locale() : get_locale();
+
+		return 0 === strpos( (string) $locale, 'fa' );
 	}
 }

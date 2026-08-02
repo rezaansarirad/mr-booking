@@ -8,7 +8,7 @@
 
 Professional appointment and booking management for WordPress — Jalali/Gregorian calendar, services, staff, working hours, holidays, SMS, and email notifications.
 
-**Version:** 1.7.3  
+**Version:** 1.8.3  
 **Author:** Reza Ansarirad  
 **Requirements:** WordPress 5.8+ · PHP 8.0+
 
@@ -27,7 +27,9 @@ Professional appointment and booking management for WordPress — Jalali/Gregori
    - Active services
    - Booking rules and appearance colors
 
-If you skip the wizard, you can finish setup later from **MR Booking → Setup** (until completed) or **Settings**.
+If you skip the wizard, you can finish setup later from **Booking Form → Setup** (until completed) or **Settings**.
+
+The admin menu title follows the WordPress site language: **Booking Form** (English) or **رزروها** (Persian).
 
 ---
 
@@ -54,8 +56,8 @@ Optional attributes:
 If Elementor is installed:
 
 1. Edit the page with Elementor.
-2. Open the **MR Booking** widget category (or search for “booking”).
-3. Drag the **MR Booking Form** widget onto the page.
+2. Open the **Booking Form** widget category (or search for “booking”).
+3. Drag the **Booking Form** widget onto the page.
 4. **Content** tab: pre-select service and/or staff.
 5. **Style** tab:
    - Text, title, background, card, and border colors
@@ -150,7 +152,7 @@ While you are on any MR Booking admin page:
 
 - **Theme presets** — Dark and Light templates based on brand colors (primary `#D4AF37`, secondary `#F0D875`, accent `#142A38`)
 - **Brand** — Primary, secondary, accent, text, labels, inputs, placeholders
-- **Buttons** — Continue/submit and back button colors (normal + hover)
+- **Buttons** — Continue/submit and back button colors (normal + hover); **loading spinner color** on Continue/Submit
 - **Service cards** — Card background, border, selected state, price, duration badge, checkmark
 - **Calendar** — Available, unavailable, holiday, fully booked colors
 - **Custom** — Fine-tune any field after applying a preset; preview before saving
@@ -277,7 +279,19 @@ The plugin integrates with WordPress personal data export and erasure tools.
 
 ## Changelog (recent)
 
-### 1.7.x
+### 1.8.x
+- **1.8.3** — Admin menu and Elementor category/widget title follow site locale (**Booking Form** / **رزروها**)
+- **1.8.2** — Fixed “official holiday” badge always showing on the booking form; removed holiday labels from the public form; compact selected-date bar; calendar no longer scrolls inside the date step
+- **1.8.1** — Loading spinner on Continue/Submit buttons during async steps; configurable loading color in **Settings → Appearance → Buttons**
+- **1.8.0** — Redesigned staff “available services” picker (card grid with service colors) on the Staff admin page
+- **1.7.9** — Services admin: “new service” form inline below the list (no separate page)
+- **1.7.8** — Service price toggle/UI fixes on the new-service form
+- **1.7.7** — Settings toggle switches RTL layout fix
+- **1.7.6** — Booking calendar: default today selection, “today” label fix, improved selected-day styling
+- **1.7.5** — Elementor widget colors default from plugin appearance settings; premium option to hide “MR Booking” branding on the public form only; GitHub tab in settings
+- **1.7.4** — Admin panel dates follow WordPress locale / Parsi Date when available
+
+### 1.7.x (earlier)
 - Customer email/SMS on confirm, reject, and cancel with admin delivery feedback
 - Live admin notifications + sound for new bookings; pending count badge
 - Phone booking admin page with customer search

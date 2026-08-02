@@ -97,18 +97,28 @@ defined( 'ABSPATH' ) || exit;
 			</section>
 
 			<section class="mrb__panel" data-panel="3">
+				<div class="mrb__selected-date" id="mrb-selected-date" hidden>
+					<strong class="mrb__selected-date__value" data-selected-date-text></strong>
+					<button type="button" class="mrb__selected-date__edit" id="mrb-edit-date"><?php esc_html_e( 'تغییر', 'mr-booking' ); ?></button>
+				</div>
+
 				<div class="mrb__cal-head">
 					<button type="button" class="mrb__icon-btn mrb__icon-btn--prev" id="mrb-prev-month" aria-label="<?php esc_attr_e( 'ماه قبل', 'mr-booking' ); ?>"></button>
 					<div class="mrb__cal-title" id="mrb-cal-title"></div>
 					<button type="button" class="mrb__icon-btn mrb__icon-btn--next" id="mrb-next-month" aria-label="<?php esc_attr_e( 'ماه بعد', 'mr-booking' ); ?>"></button>
 				</div>
 				<div class="mrb__weekdays" id="mrb-weekdays"></div>
-				<div class="mrb__calendar" id="mrb-calendar" role="grid" aria-describedby="mrb-err-date"></div>
+				<div class="mrb__calendar-scroll" id="mrb-calendar-scroll">
+					<div class="mrb__calendar" id="mrb-calendar" role="grid" aria-describedby="mrb-err-date"></div>
+				</div>
 				<p class="mrb__hint" id="mrb-cal-hint"></p>
 				<span class="mrb-field__error mrb-field__error--block" id="mrb-err-date" hidden></span>
 			</section>
 
 			<section class="mrb__panel" data-panel="4">
+				<div class="mrb__selected-date mrb__selected-date--compact" id="mrb-selected-date-time" hidden>
+					<strong class="mrb__selected-date__value" data-selected-date-text></strong>
+				</div>
 				<div class="mrb__slots" id="mrb-slots" role="listbox" aria-describedby="mrb-err-time"></div>
 				<p class="mrb__hint" id="mrb-slots-hint"></p>
 				<span class="mrb-field__error mrb-field__error--block" id="mrb-err-time" hidden></span>
@@ -131,7 +141,7 @@ defined( 'ABSPATH' ) || exit;
 
 		<footer class="mrb__footer">
 			<button type="button" class="mrb__btn mrb__btn--ghost" id="mrb-prev"><?php echo esc_html( (string) $settings['text_btn_prev'] ); ?></button>
-			<button type="button" class="mrb__btn mrb__btn--primary" id="mrb-next"><?php echo esc_html( (string) $settings['text_btn_next'] ); ?></button>
+			<button type="button" class="mrb__btn mrb__btn--primary" id="mrb-next"><span class="mrb__btn__label"><?php echo esc_html( (string) $settings['text_btn_next'] ); ?></span></button>
 		</footer>
 	</div>
 

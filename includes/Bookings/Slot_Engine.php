@@ -330,8 +330,9 @@ final class Slot_Engine {
 			);
 
 			if ( isset( $holidays[ $ymd ] ) ) {
-				$meta['holiday']       = true;
-				$meta['holiday_title'] = $holidays[ $ymd ]->title;
+				$meta['holiday']          = true;
+				$meta['holiday_title']    = (string) $holidays[ $ymd ]->title;
+				$meta['holiday_official'] = ! empty( $holidays[ $ymd ]->is_official );
 			}
 
 			$special = Hours_Repository::special_date( $ymd );

@@ -10,7 +10,6 @@ declare(strict_types=1);
 namespace MRBooking\Notifications;
 
 use MRBooking\Bookings\Booking_Repository;
-use MRBooking\Calendar\Jalali;
 use MRBooking\Helpers;
 use MRBooking\Notifications\Email\Email_Sender;
 use MRBooking\Notifications\SMS\SMS_Manager;
@@ -201,10 +200,19 @@ final class Notification_Service {
 	}
 
 	public function notify_admins_new_booking( object $booking ): void {
-		$vars     = self::vars_for_booking( $booking );
+		$vars     = self::vars_for_booking( $booking, 'admin' );
 		$settings = Settings::get();
 		$link     = admin_url( 'admin.php?page=mr-booking-appointments&view=' . (int) $booking->id );
 		$pending  = admin_url( 'admin.php?page=mr-booking-appointments&status=pending' );
+		$ymd      = substr( (string) $booking->start_datetime, 0, 10 );
+		$holiday  = \MRBooking\Holidays\Holiday_Repository::find_by_date( $ymd );
+		$holiday_note = '';
+		if ( $holiday && ! empty( $holiday->is_official ) ) {
+			$holiday_note = '<p style="margin:12px 0;padding:10px 12px;border-radius:8px;background:#fef3c7;color:#92400e">'
+				. '<strong>' . esc_html__( 'توجه: این نوبت در روز تعطیل رسمی ثبت شده است.', 'mr-booking' ) . '</strong>'
+				. ( ! empty( $holiday->title ) ? ' ' . esc_html( (string) $holiday->title ) : '' )
+				. '</p>';
+		}
 
 		$subject = sprintf(
 			/* translators: %s: booking code */
@@ -213,6 +221,7 @@ final class Notification_Service {
 		);
 
 		$body = '<div dir="rtl" style="font-family:Tahoma,sans-serif;line-height:1.8">'
+			. $holiday_note
 			. '<p><strong>' . esc_html__( 'یک رزرو جدید ثبت شد', 'mr-booking' ) . '</strong></p>'
 			. '<ul>'
 			. '<li>' . esc_html__( 'مشتری:', 'mr-booking' ) . ' ' . esc_html( $vars['customer_name'] ) . '</li>'
@@ -288,7 +297,7 @@ final class Notification_Service {
 	/**
 	 * @return array<string, string>
 	 */
-	public static function vars_for_booking( object $booking ): array {
+	public static function vars_for_booking( object $booking, string $context = 'customer' ): array {
 		$services = Booking_Repository::services( (int) $booking->id );
 		$names    = array();
 		foreach ( $services as $s ) {
@@ -304,15 +313,13 @@ final class Notification_Service {
 		}
 
 		$date = substr( (string) $booking->start_datetime, 0, 10 );
-		$time = substr( (string) $booking->start_datetime, 11, 5 );
-		$mode = Settings::get_value( 'calendar_mode', 'jalali' );
 
-		$date_label = $date;
-		if ( 'gregorian' !== $mode ) {
-			$date_label = Jalali::format_from_date( $date );
-			if ( 'both' === $mode ) {
-				$date_label = Jalali::dual_label( $date );
-			}
+		if ( 'admin' === $context ) {
+			$date_label = Helpers::format_admin_dual_date( $date );
+			$time       = Helpers::format_admin_time( (string) $booking->start_datetime );
+		} else {
+			$date_label = Helpers::format_customer_date( $date );
+			$time       = Helpers::format_customer_time( (string) $booking->start_datetime );
 		}
 
 		return array(
@@ -320,7 +327,7 @@ final class Notification_Service {
 			'customer_phone' => (string) ( $booking->phone ?? '' ),
 			'service_name'   => implode( '، ', $names ),
 			'booking_date'   => $date_label,
-			'booking_time'   => Helpers::to_persian_digits( $time ),
+			'booking_time'   => $time,
 			'staff_name'     => $staff_name,
 			'booking_id'     => (string) $booking->booking_code,
 			'business_name'  => (string) Settings::get_value( 'business_name', get_bloginfo( 'name' ) ),

@@ -16,8 +16,14 @@ $name_prefix = $name_prefix ?? 'days';
 <div class="mrb-hours-week">
 	<?php foreach ( $order as $dow ) : ?>
 		<?php
-		$rows    = $grouped[ $dow ] ?? array();
-		$closed  = ! empty( $rows ) && (int) $rows[0]->is_closed;
+		$rows   = $grouped[ $dow ] ?? array();
+		$closed = false;
+		if ( ! empty( $rows ) ) {
+			$first = $rows[0];
+			if ( is_object( $first ) && isset( $first->is_closed ) ) {
+				$closed = (int) $first->is_closed === 1;
+			}
+		}
 		$periods = $closed ? array() : $rows;
 		if ( empty( $periods ) && ! $closed ) {
 			$periods = array( (object) array( 'start_time' => '09:00:00', 'end_time' => '13:00:00' ) );

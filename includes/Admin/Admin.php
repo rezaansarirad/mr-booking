@@ -27,7 +27,6 @@ final class Admin {
 		add_action( 'admin_menu', array( $this, 'menu' ) );
 		add_action( 'admin_menu', array( $this, 'menu_badges' ), 999 );
 		add_action( 'admin_enqueue_scripts', array( $this, 'assets' ) );
-		add_filter( 'admin_body_class', array( $this, 'body_class' ) );
 		add_action( 'admin_init', array( $this, 'handle_exports' ) );
 		add_action( 'wp_ajax_mr_booking_admin', array( $this, 'ajax' ) );
 
@@ -51,23 +50,13 @@ final class Admin {
 		add_action( 'admin_post_mr_booking_hide_form_help', array( Pages\Dashboard::class, 'hide_form_help' ) );
 	}
 
-	public function body_class( string $classes ): string {
-		if ( \MRBooking\Premium\License::hide_branding() ) {
-			$classes .= ' mrb-hide-branding';
-		}
-		return $classes;
-	}
-
 	public function menu(): void {
-		$cap = Helpers::manage_cap();
-
-		$brand = \MRBooking\Premium\License::hide_branding()
-			? __( 'رزرو', 'mr-booking' )
-			: __( 'MR Booking', 'mr-booking' );
+		$cap  = Helpers::manage_cap();
+		$name = Helpers::plugin_name();
 
 		add_menu_page(
-			$brand,
-			$brand,
+			$name,
+			$name,
 			$cap,
 			'mr-booking',
 			array( Pages\Dashboard::class, 'render' ),
@@ -238,7 +227,7 @@ final class Admin {
 					'restUrl' => esc_url_raw( rest_url( 'mr-booking/v1' ) ),
 					'nonce'   => wp_create_nonce( 'wp_rest' ),
 					'settings'=> array(
-						'calendar_mode'        => $settings['calendar_mode'],
+						'calendar_mode'        => \MRBooking\Helpers::admin_calendar_mode(),
 						'enable_multi_service' => (int) $settings['enable_multi_service'],
 						'allow_same_day'       => (int) $settings['allow_same_day'],
 						'today'                => \MRBooking\Bookings\Slot_Engine::today(),

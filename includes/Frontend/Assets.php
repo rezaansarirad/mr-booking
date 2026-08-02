@@ -64,9 +64,12 @@ final class Assets {
 			?: sanitize_hex_color( (string) ( $settings['color_primary'] ?? '' ) )
 			?: '#d4af37';
 		$input_bg = sanitize_hex_color( (string) ( $settings['color_card'] ?? '' ) ) ?: '#111111';
+		$btn_loading = sanitize_hex_color( (string) ( $settings['color_btn_loading'] ?? '' ) )
+			?: sanitize_hex_color( (string) ( $settings['color_btn_text'] ?? '' ) )
+			?: '#ffffff';
 
 		return sprintf(
-			'%38$s{--mrb-primary:%1$s;--mrb-secondary:%2$s;--mrb-accent:%3$s;--mrb-button:%4$s;--mrb-button-hover:%5$s;--mrb-btn-text:%22$s;--mrb-btn-ghost-bg:%23$s;--mrb-btn-ghost-hover:%24$s;--mrb-btn-ghost-text:%25$s;--mrb-text:%6$s;--mrb-label:%19$s;--mrb-title:%19$s;--mrb-input-text:%20$s;--mrb-input-placeholder:%26$s;--mrb-input-bg:%39$s;--mrb-service-text:%21$s;--mrb-service-desc:%30$s;--mrb-service-card:%27$s;--mrb-service-card-selected:%28$s;--mrb-service-card-border:%31$s;--mrb-service-duration-bg:%32$s;--mrb-service-duration-text:%33$s;--mrb-service-duration-bg-selected:%34$s;--mrb-service-price:%35$s;--mrb-service-check-border:%36$s;--mrb-service-check-active:%37$s;--mrb-radio-active:%29$s;--mrb-bg:%7$s;--mrb-card:%8$s;--mrb-border:%9$s;--mrb-holiday:%10$s;--mrb-holiday-bg:%11$s;--mrb-available:%12$s;--mrb-unavailable:%13$s;--mrb-full:%14$s;--mrb-success:%15$s;--mrb-error:%16$s;--mrb-warning:%17$s;--mrb-font:%18$s;}',
+			'%40$s{--mrb-primary:%1$s;--mrb-secondary:%2$s;--mrb-accent:%3$s;--mrb-button:%4$s;--mrb-button-hover:%5$s;--mrb-btn-text:%22$s;--mrb-btn-loading:%39$s;--mrb-btn-ghost-bg:%23$s;--mrb-btn-ghost-hover:%24$s;--mrb-btn-ghost-text:%25$s;--mrb-text:%6$s;--mrb-label:%19$s;--mrb-title:%19$s;--mrb-input-text:%20$s;--mrb-input-placeholder:%26$s;--mrb-input-bg:%38$s;--mrb-service-text:%21$s;--mrb-service-desc:%30$s;--mrb-service-card:%27$s;--mrb-service-card-selected:%28$s;--mrb-service-card-border:%31$s;--mrb-service-duration-bg:%32$s;--mrb-service-duration-text:%33$s;--mrb-service-duration-bg-selected:%34$s;--mrb-service-price:%35$s;--mrb-service-check-border:%36$s;--mrb-service-check-active:%37$s;--mrb-radio-active:%29$s;--mrb-bg:%7$s;--mrb-card:%8$s;--mrb-border:%9$s;--mrb-holiday:%10$s;--mrb-holiday-bg:%11$s;--mrb-available:%12$s;--mrb-unavailable:%13$s;--mrb-full:%14$s;--mrb-success:%15$s;--mrb-error:%16$s;--mrb-warning:%17$s;--mrb-font:%18$s;}',
 			$settings['color_primary'],
 			$settings['color_secondary'],
 			$settings['color_accent'],
@@ -104,8 +107,9 @@ final class Assets {
 			$service_price,
 			$check_border,
 			$check_active,
+			$input_bg,
+			$btn_loading,
 			$selector,
-			$input_bg
 		);
 	}
 
@@ -264,6 +268,8 @@ final class Assets {
 					'sameDayDisabled' => __( 'رزرو برای امروز در تنظیمات غیرفعال است.', 'mr-booking' ),
 					'noFutureSlots' => __( 'برای این روز ساعت آزاد باقی نمانده است.', 'mr-booking' ),
 					'todayLabel'    => __( 'امروز', 'mr-booking' ),
+					'officialHoliday' => __( 'تعطیل رسمی', 'mr-booking' ),
+					'selectedDateHint' => __( 'برای ادامه «بعدی» را بزنید یا تاریخ دیگری انتخاب کنید.', 'mr-booking' ),
 					'pastTime'      => __( 'این ساعت گذشته است.', 'mr-booking' ),
 					'bookedTime'    => __( 'این ساعت رزرو شده است.', 'mr-booking' ),
 					'selectBirth'   => __( 'لطفاً تاریخ تولد را انتخاب کنید.', 'mr-booking' ),

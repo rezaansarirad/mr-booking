@@ -23,6 +23,7 @@
     calYear: null,
     calMonth: null,
     submitting: false,
+    nextLoading: false,
     result: null,
   };
 
@@ -42,8 +43,12 @@
     staffHint: root.querySelector('#mrb-staff-hint'),
     calTitle: root.querySelector('#mrb-cal-title'),
     calendar: root.querySelector('#mrb-calendar'),
+    calendarScroll: root.querySelector('#mrb-calendar-scroll'),
     weekdays: root.querySelector('#mrb-weekdays'),
     calHint: root.querySelector('#mrb-cal-hint'),
+    selectedDate: root.querySelector('#mrb-selected-date'),
+    selectedDateTime: root.querySelector('#mrb-selected-date-time'),
+    editDate: root.querySelector('#mrb-edit-date'),
     slots: root.querySelector('#mrb-slots'),
     slotsHint: root.querySelector('#mrb-slots-hint'),
     summary: root.querySelector('#mrb-summary'),
@@ -699,6 +704,69 @@
     await loadStaff();
   }
 
+  function canSelectDay(day) {
+    if (!day) return false;
+    const today = (cfg.settings && cfg.settings.today) || '';
+    const allowSameDay = cfg.settings && Number(cfg.settings.allow_same_day) === 1;
+    const blockedSameDay = !allowSameDay && today && day.date === today;
+    return day.selectable !== undefined
+      ? !!day.selectable
+      : !day.past && !blockedSameDay && !day.closed && !day.beyond;
+  }
+
+  function ensureDefaultDateSelection() {
+    if (state.date) {
+      return;
+    }
+    const today = (cfg.settings && cfg.settings.today) || '';
+    if (!today) {
+      return;
+    }
+    const todayDay = state.days.find((d) => d.date === today);
+    if (todayDay && canSelectDay(todayDay)) {
+      state.date = today;
+    }
+  }
+
+  function formatSelectedDateLabel(day) {
+    if (!day) return '';
+    const mode = cfg.settings.calendar_mode;
+    if (mode === 'both') {
+      return String(day.dual || day.date).replace('\n', ' · ');
+    }
+    if (mode === 'gregorian') {
+      return day.date;
+    }
+    const months = cfg.months || {};
+    const monthName = months[day.j_month] || '';
+    return [day.weekday_fa || '', toFa(day.j_day), monthName, toFa(day.j_year)].filter(Boolean).join(' ');
+  }
+
+  function updateSelectedDateUI(dayObj) {
+    const day = dayObj || state.days.find((d) => d.date === state.date);
+    const bars = [el.selectedDate, el.selectedDateTime].filter(Boolean);
+
+    if (!day || !state.date) {
+      bars.forEach((bar) => {
+        bar.hidden = true;
+      });
+      return;
+    }
+
+    const label = formatSelectedDateLabel(day);
+    bars.forEach((bar) => {
+      bar.hidden = false;
+      const textEl = bar.querySelector('[data-selected-date-text]');
+      if (textEl) {
+        textEl.textContent = label;
+      }
+    });
+  }
+
+  function selectedDayObject() {
+    return state.days.find((d) => d.date === state.date) || null;
+  }
+
   function escapeHtml(str) {
     return String(str)
       .replace(/&/g, '&amp;')
@@ -746,6 +814,12 @@
       el.calendar.innerHTML = '';
       return;
     }
+
+    ensureDefaultDateSelection();
+
+    const today = (cfg.settings && cfg.settings.today) || '';
+    const allowSameDay = cfg.settings && Number(cfg.settings.allow_same_day) === 1;
+
     const first = new Date(firstDate + 'T12:00:00');
     const dow = first.getDay(); // 0 Sun
     const offset = (dow + 1) % 7; // Sat=0
@@ -772,15 +846,9 @@
 
       btn.innerHTML = `<span>${toFa(mainNum)}</span>${sub}`;
 
-      const today = (cfg.settings && cfg.settings.today) || '';
       const isToday = !!(day.today || (today && day.date === today));
       const isPast = !!day.past;
-      const allowSameDay = cfg.settings && Number(cfg.settings.allow_same_day) === 1;
-      const blockedSameDay = !allowSameDay && today && day.date === today;
-      const canSelect =
-        day.selectable !== undefined
-          ? !!day.selectable
-          : !isPast && !blockedSameDay && !day.closed && !day.beyond;
+      const canSelect = canSelectDay(day);
 
       if (isToday) {
         btn.classList.add('is-today');
@@ -799,7 +867,7 @@
         if (isPast) btn.classList.add('is-past');
         btn.disabled = true;
         if (isPast) btn.title = (cfg.i18n && cfg.i18n.pastDate) || '';
-        else if (blockedSameDay || day.same_day_blocked) btn.title = (cfg.i18n && cfg.i18n.sameDayDisabled) || '';
+        else if (!allowSameDay && today && day.date === today) btn.title = (cfg.i18n && cfg.i18n.sameDayDisabled) || '';
         else if (day.closed_reason === 'holiday') btn.title = day.holiday_title || (cfg.texts && cfg.texts.holiday) || '';
         else if (day.closed) btn.title = (cfg.texts && cfg.texts.closed_day) || '';
         else if (day.no_future_slots) btn.title = (cfg.i18n && cfg.i18n.noFutureSlots) || '';
@@ -826,12 +894,12 @@
         clearFieldError('date');
         el.calendar.classList.remove('is-invalid');
         el.error.hidden = true;
-        if (mode === 'both') {
-          el.calHint.textContent = day.dual.replace('\n', ' · ');
-        } else if (mode === 'jalali') {
-          el.calHint.textContent = `${day.weekday_fa} ${toFa(day.jalali)}`;
-        } else {
-          el.calHint.textContent = day.date;
+        updateSelectedDateUI(day);
+        if (el.calHint) {
+          el.calHint.textContent = cfg.i18n.selectedDateHint || 'برای ادامه، «بعدی» را بزنید یا تاریخ دیگری انتخاب کنید.';
+        }
+        if (el.calendarScroll) {
+          el.calendarScroll.scrollTop = 0;
         }
       });
 
@@ -841,18 +909,23 @@
     // Drop stale selection if it became past/disabled.
     if (state.date) {
       const selected = state.days.find((d) => d.date === state.date);
-      const today = (cfg.settings && cfg.settings.today) || '';
-      const allowSameDay = cfg.settings && Number(cfg.settings.allow_same_day) === 1;
-      const blockedSameDay = !allowSameDay && today && state.date === today;
-      const canSelect =
-        selected &&
-        ( selected.selectable !== undefined
-          ? !!selected.selectable
-          : !selected.past && !selected.closed && !selected.beyond && !blockedSameDay );
-      if (!canSelect) {
+      if (!canSelectDay(selected)) {
         state.date = null;
         state.time = null;
+        updateSelectedDateUI(null);
       }
+    }
+
+    if (!state.date) {
+      ensureDefaultDateSelection();
+    }
+
+    if (state.date) {
+      updateSelectedDateUI(selectedDayObject());
+      el.calendar.querySelectorAll('.mrb__day').forEach((btn) => {
+        const match = btn.dataset.date === state.date && !btn.disabled;
+        btn.classList.toggle('is-selected', match);
+      });
     }
   }
 
@@ -909,7 +982,7 @@
 
   function renderSummary() {
     const svcs = selectedServiceObjects();
-    const day = state.days.find((d) => d.date === state.date);
+    const day = selectedDayObject();
     const name =
       root.querySelector('[name="first_name"]').value +
       ' ' +
@@ -933,7 +1006,7 @@
         <div><dt>رزرو برای</dt><dd>${escapeHtml(forLabel)}</dd></div>
         ${staffMember ? `<div><dt>پرسنل</dt><dd>${escapeHtml(staffMember.name)}</dd></div>` : ''}
         <div><dt>خدمات</dt><dd>${escapeHtml(svcs.map((s) => s.name).join('، '))}</dd></div>
-        <div><dt>تاریخ</dt><dd>${escapeHtml(day ? (cfg.settings.calendar_mode === 'gregorian' ? day.date : day.dual || day.jalali) : state.date)}</dd></div>
+        <div><dt>تاریخ</dt><dd>${escapeHtml(day ? formatSelectedDateLabel(day) : state.date || '')}</dd></div>
         <div><dt>ساعت</dt><dd>${toFa(state.time || '')}</dd></div>
         <div><dt>مدت</dt><dd>${toFa(svcs.reduce((a, s) => a + s.duration, 0))} دقیقه</dd></div>
         ${
@@ -951,6 +1024,24 @@
     `;
   }
 
+  function nextButtonLabel(step) {
+    return step === 5 ? cfg.texts.btn_submit : cfg.texts.btn_next;
+  }
+
+  function setNextLoading(loading, labelOverride) {
+    state.nextLoading = loading;
+    el.next.disabled = loading;
+    el.next.classList.toggle('is-loading', loading);
+    el.next.setAttribute('aria-busy', loading ? 'true' : 'false');
+    if (el.prev && state.step > 1) {
+      el.prev.disabled = loading;
+    }
+    const labelEl = el.next.querySelector('.mrb__btn__label') || el.next;
+    labelEl.textContent = loading
+      ? labelOverride || cfg.i18n.loading
+      : nextButtonLabel(state.step);
+  }
+
   function setStep(step) {
     state.step = step;
     el.panels.forEach((p) => {
@@ -963,33 +1054,49 @@
       s.classList.toggle('is-done', n < step);
     });
     el.prev.style.visibility = step === 1 ? 'hidden' : 'visible';
-    el.next.textContent =
-      step === 5 ? cfg.texts.btn_submit : cfg.texts.btn_next;
+    if (el.prev) {
+      el.prev.disabled = false;
+    }
+    const labelEl = el.next.querySelector('.mrb__btn__label');
+    if (labelEl) {
+      labelEl.textContent = nextButtonLabel(step);
+    } else {
+      el.next.textContent = nextButtonLabel(step);
+    }
     clearAllErrors();
     root.querySelector('.mrb__footer').hidden = false;
+    if (step === 3 || step === 4) {
+      updateSelectedDateUI(selectedDayObject());
+    }
   }
 
   async function goNext() {
     if (!validateStep(state.step)) return;
+    if (state.nextLoading || state.submitting) return;
 
     if (state.step === 5) {
       await submitBooking();
       return;
     }
 
-    const next = state.step + 1;
-    if (next === 3) {
-      initCalendarCursor();
-      renderWeekdays();
-      await loadMonth();
+    setNextLoading(true);
+    try {
+      const next = state.step + 1;
+      if (next === 3) {
+        initCalendarCursor();
+        renderWeekdays();
+        await loadMonth();
+      }
+      if (next === 4) {
+        await loadSlots();
+      }
+      if (next === 5) {
+        renderSummary();
+      }
+      setStep(next);
+    } finally {
+      setNextLoading(false);
     }
-    if (next === 4) {
-      await loadSlots();
-    }
-    if (next === 5) {
-      renderSummary();
-    }
-    setStep(next);
   }
 
   function goPrev() {
@@ -1000,8 +1107,7 @@
   async function submitBooking() {
     if (state.submitting) return;
     state.submitting = true;
-    el.next.disabled = true;
-    el.next.textContent = cfg.i18n.submitting;
+    setNextLoading(true, cfg.i18n.submitting);
 
     try {
       const payload = {
@@ -1027,16 +1133,14 @@
       showSuccess(data);
     } catch (e) {
       fail(e.message || cfg.i18n.error);
-      el.next.disabled = false;
-      el.next.textContent = cfg.texts.btn_submit;
+      setNextLoading(false);
       state.submitting = false;
     }
   }
 
   function showSuccess(data) {
     state.submitting = false;
-    el.next.disabled = false;
-    el.next.textContent = cfg.texts.btn_submit;
+    setNextLoading(false);
     el.panels.forEach((p) => p.classList.remove('is-active'));
     el.success.hidden = false;
     el.success.classList.add('is-active');
@@ -1082,6 +1186,17 @@
   }
   root.querySelector('#mrb-prev-month').addEventListener('click', () => shiftMonth(-1));
   root.querySelector('#mrb-next-month').addEventListener('click', () => shiftMonth(1));
+
+  if (el.editDate) {
+    el.editDate.addEventListener('click', () => {
+      if (el.calendarScroll) {
+        el.calendarScroll.scrollTop = 0;
+      }
+      if (el.selectedDate) {
+        el.selectedDate.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      }
+    });
+  }
 
   root.addEventListener('keydown', (e) => {
     if (e.key !== 'Enter') return;

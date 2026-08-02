@@ -96,7 +96,7 @@ defined( 'ABSPATH' ) || exit;
 					<?php foreach ( $history as $b ) : ?>
 						<tr>
 							<td><a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-appointments&view=' . $b->id ) ); ?>"><?php echo esc_html( $b->booking_code ); ?></a></td>
-							<td><?php echo esc_html( $b->start_datetime ); ?></td>
+							<td><?php echo esc_html( \MRBooking\Helpers::format_admin_datetime( (string) $b->start_datetime ) ); ?></td>
 							<td><?php echo esc_html( $b->status ); ?></td>
 						</tr>
 					<?php endforeach; ?>
@@ -127,7 +127,7 @@ defined( 'ABSPATH' ) || exit;
 							<td><?php echo esc_html( trim( $c->first_name . ' ' . $c->last_name ) ); ?></td>
 							<td><?php echo esc_html( $c->phone ); ?></td>
 							<td><?php echo esc_html( (string) $c->email ); ?></td>
-							<td><?php echo esc_html( (string) $c->birth_date ); ?></td>
+							<td><?php echo esc_html( ! empty( $c->birth_date ) ? \MRBooking\Helpers::format_admin_date( (string) $c->birth_date ) : '—' ); ?></td>
 							<td><a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-customers&view=' . $c->id ) ); ?>"><?php esc_html_e( 'ویرایش', 'mr-booking' ); ?></a></td>
 						</tr>
 					<?php endforeach; ?>

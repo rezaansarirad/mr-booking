@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace MRBooking\Elementor;
 
 use MRBooking\Frontend\Assets as Frontend_Assets;
+use MRBooking\Helpers;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -30,14 +31,10 @@ final class Bootstrap {
 	 * @param \Elementor\Elements_Manager $elements_manager Manager.
 	 */
 	public function register_category( $elements_manager ): void {
-		$title = \MRBooking\Premium\License::hide_branding()
-			? __( 'رزرو', 'mr-booking' )
-			: __( 'MR Booking', 'mr-booking' );
-
 		$elements_manager->add_category(
 			'mr-booking',
 			array(
-				'title' => $title,
+				'title' => Helpers::plugin_name(),
 				'icon'  => 'fa fa-calendar-check',
 			)
 		);

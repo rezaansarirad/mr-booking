@@ -49,7 +49,12 @@
     var toggle = document.getElementById('mrb-has-price');
     var box = document.getElementById('mrb-price-amount');
     if (!toggle || !box) return;
-    box.classList.toggle('is-hidden', !toggle.checked);
+    var on = toggle.checked;
+    box.classList.toggle('is-hidden', !on);
+    var switchUi = toggle.closest('.mrb-switch');
+    if (switchUi) {
+      switchUi.classList.toggle('is-on', on);
+    }
   }
 
   $(document).on('change', '#mrb-has-price', syncPriceToggle);
@@ -86,8 +91,13 @@
     $block.toggleClass('is-closed', closed).toggleClass('is-open', !closed);
   }
 
-  $(document).on('change', '.mrb-day-closed', function () {
+  $(document).on('change', '.mrb-day-closed', function (e) {
+    e.stopPropagation();
     syncDayClosed($(this));
+  });
+
+  $(document).on('click', '.mrb-day-closed-toggle', function (e) {
+    e.stopPropagation();
   });
 
   $('.mrb-day-closed').each(function () {
@@ -232,61 +242,6 @@
 
   $(document).on('change', '#mrb-special-type', syncSpecialHours);
   syncSpecialHours();
-
-  function initStaffNewDialog() {
-    var dialog = document.getElementById('mrb-staff-new-dialog');
-    var openBtn = document.getElementById('mrb-staff-new-open');
-    if (!dialog || !openBtn || typeof dialog.showModal !== 'function') {
-      return;
-    }
-
-    function openDialog() {
-      dialog.showModal();
-    }
-
-    function closeDialog() {
-      if (dialog.open) {
-        dialog.close();
-      }
-    }
-
-    function resetDialogForm() {
-      var form = dialog.querySelector('form');
-      if (!form) {
-        return;
-      }
-      form.reset();
-      $(dialog).find('.mrb-day-closed').each(function () {
-        syncDayClosed($(this));
-      });
-    }
-
-    openBtn.addEventListener('click', openDialog);
-
-    dialog.querySelectorAll('[data-close-dialog]').forEach(function (btn) {
-      btn.addEventListener('click', closeDialog);
-    });
-
-    dialog.addEventListener('click', function (event) {
-      if (event.target === dialog) {
-        closeDialog();
-      }
-    });
-
-    dialog.addEventListener('close', resetDialogForm);
-
-    var page = document.querySelector('.mrb-staff-page[data-open-staff-dialog="1"]');
-    if (page) {
-      openDialog();
-      if (window.history && window.history.replaceState) {
-        var url = new URL(window.location.href);
-        url.searchParams.delete('new');
-        window.history.replaceState({}, '', url.toString());
-      }
-    }
-  }
-
-  initStaffNewDialog();
 
 	$(document).on('click', '.mrb-notif-var', function () {
 		var $btn = $(this);
@@ -585,4 +540,11 @@
 		window.setInterval(poll, parseInt(cfg.pollIntervalMs, 10) || 30000);
 		window.setTimeout(poll, 4000);
 	})();
+
+  var serviceEditor = document.getElementById('mrb-service-editor');
+  if (serviceEditor && /[?&]new=1(?:&|$)/.test(window.location.search)) {
+    window.requestAnimationFrame(function () {
+      serviceEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
 })(jQuery);

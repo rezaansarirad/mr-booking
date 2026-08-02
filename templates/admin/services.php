@@ -11,20 +11,25 @@ use MRBooking\Helpers;
 
 $duration_presets = array( 15, 20, 30, 45, 60, 90, 120 );
 $current_duration = (int) ( $service?->duration ?? 30 );
-$editing          = null !== $service || ! empty( $_GET['new'] ); // phpcs:ignore
 $has_price_val    = $service ? \MRBooking\Services\Service_Repository::has_price( $service ) : false;
 $global_prices    = ! empty( \MRBooking\Settings\Settings::get_value( 'show_prices' ) );
+$list_url         = admin_url( 'admin.php?page=mr-booking-services' );
+$new_service_url  = admin_url( 'admin.php?page=mr-booking-services&new=1' );
 ?>
 <div class="wrap mrb-admin mrb-services-page" dir="rtl">
 	<header class="mrb-admin__header">
 		<div>
 			<p class="mrb-admin__eyebrow"><?php esc_html_e( 'MR Booking', 'mr-booking' ); ?></p>
 			<h1><?php esc_html_e( 'خدمات', 'mr-booking' ); ?></h1>
-			<p class="mrb-services-page__lead"><?php esc_html_e( 'هر خدمت را کامل ویرایش کنید؛ بازه زمانی و وضعیت قیمت (دارد / ندارد) برای هر مورد جداگانه مشخص می‌شود.', 'mr-booking' ); ?></p>
+			<p class="mrb-services-page__lead">
+				<?php esc_html_e( 'هر خدمت را کامل ویرایش کنید؛ بازه زمانی و وضعیت قیمت (دارد / ندارد) برای هر مورد جداگانه مشخص می‌شود.', 'mr-booking' ); ?>
+			</p>
 		</div>
-		<a class="button button-primary" href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-services&new=1' ) ); ?>">
-			<?php esc_html_e( '+ خدمت جدید', 'mr-booking' ); ?>
-		</a>
+		<?php if ( ! $creating ) : ?>
+			<a class="button button-primary" href="<?php echo esc_url( $new_service_url ); ?>">
+				<?php esc_html_e( '+ خدمت جدید', 'mr-booking' ); ?>
+			</a>
+		<?php endif; ?>
 	</header>
 
 	<?php if ( ! empty( $_GET['saved'] ) || ! empty( $_GET['updated'] ) ) : // phpcs:ignore ?>
@@ -41,7 +46,7 @@ $global_prices    = ! empty( \MRBooking\Settings\Settings::get_value( 'show_pric
 		</div>
 	<?php endif; ?>
 
-	<div class="mrb-services-layout <?php echo $editing ? 'is-editing' : ''; ?>">
+	<div class="mrb-services-layout <?php echo $show_form ? 'is-editing' : ''; ?> <?php echo $creating ? 'is-creating' : ''; ?>">
 		<section class="mrb-panel mrb-services-list-panel">
 			<h2><?php esc_html_e( 'لیست خدمات', 'mr-booking' ); ?> <span class="mrb-count"><?php echo esc_html( (string) count( $services ) ); ?></span></h2>
 
@@ -128,11 +133,17 @@ $global_prices    = ! empty( \MRBooking\Settings\Settings::get_value( 'show_pric
 			<?php endif; ?>
 		</section>
 
-		<?php if ( $editing ) : ?>
-			<section class="mrb-panel mrb-service-editor">
+		<?php if ( $show_form ) : ?>
+			<section class="mrb-panel mrb-service-editor" id="mrb-service-editor">
 				<div class="mrb-service-editor__head">
-					<h2><?php echo $service ? esc_html__( 'ویرایش خدمت', 'mr-booking' ) : esc_html__( 'خدمت جدید', 'mr-booking' ); ?></h2>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-services' ) ); ?>"><?php esc_html_e( 'بستن', 'mr-booking' ); ?></a>
+					<h2>
+						<?php
+						echo $creating
+							? esc_html__( 'خدمت جدید', 'mr-booking' )
+							: esc_html__( 'ویرایش خدمت', 'mr-booking' );
+						?>
+					</h2>
+					<a href="<?php echo esc_url( $list_url ); ?>"><?php esc_html_e( 'بستن', 'mr-booking' ); ?></a>
 				</div>
 
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrb-form" id="mrb-service-form">
@@ -178,14 +189,16 @@ $global_prices    = ! empty( \MRBooking\Settings\Settings::get_value( 'show_pric
 							<span><?php esc_html_e( 'مشخص کنید این خدمت قیمت دارد یا رایگان / بدون قیمت است', 'mr-booking' ); ?></span>
 						</div>
 
-						<label class="mrb-switch mrb-price-toggle">
-							<input type="checkbox" name="has_price" value="1" id="mrb-has-price" <?php checked( $has_price_val ); ?> />
-							<span class="mrb-switch__ui" aria-hidden="true"></span>
-							<span class="mrb-switch__copy">
-								<strong><?php esc_html_e( 'این خدمت قیمت دارد', 'mr-booking' ); ?></strong>
-								<small><?php esc_html_e( 'اگر خاموش باشد، در فرم رزرو قیمتی نشان داده نمی‌شود.', 'mr-booking' ); ?></small>
-							</span>
-						</label>
+						<div class="mrb-price-box__toggle-row">
+							<label class="mrb-switch mrb-price-toggle <?php echo $has_price_val ? 'is-on' : ''; ?>">
+								<input type="checkbox" name="has_price" value="1" id="mrb-has-price" <?php checked( $has_price_val ); ?> />
+								<span class="mrb-switch__ui" aria-hidden="true"></span>
+								<span class="mrb-switch__copy">
+									<strong><?php esc_html_e( 'این خدمت قیمت دارد', 'mr-booking' ); ?></strong>
+									<small><?php esc_html_e( 'اگر خاموش باشد، در فرم رزرو قیمتی نشان داده نمی‌شود.', 'mr-booking' ); ?></small>
+								</span>
+							</label>
+						</div>
 
 						<div class="mrb-price-amount <?php echo $has_price_val ? '' : 'is-hidden'; ?>" id="mrb-price-amount">
 							<label class="mrb-field">

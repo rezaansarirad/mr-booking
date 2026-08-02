@@ -116,6 +116,26 @@ final class Rest_Controller {
 		return current_user_can( Helpers::manage_cap() );
 	}
 
+	/**
+	 * Calendar mode for availability API (admin follows WordPress; frontend uses plugin setting).
+	 *
+	 * @return 'jalali'|'gregorian'|'both'
+	 */
+	private function resolve_calendar_mode( WP_REST_Request $request ): string {
+		if ( current_user_can( Helpers::manage_cap() ) ) {
+			$param = sanitize_key( (string) $request->get_param( 'calendar_mode' ) );
+			if ( in_array( $param, array( 'jalali', 'gregorian', 'both' ), true ) ) {
+				return $param;
+			}
+
+			return Helpers::admin_calendar_mode();
+		}
+
+		$mode = Settings::get_value( 'calendar_mode', 'jalali' );
+
+		return in_array( $mode, array( 'jalali', 'gregorian', 'both' ), true ) ? $mode : 'jalali';
+	}
+
 	public function search_customers( WP_REST_Request $request ): WP_REST_Response {
 		$q     = sanitize_text_field( (string) $request->get_param( 'q' ) );
 		$items = array();
@@ -170,6 +190,8 @@ final class Rest_Controller {
 			);
 		}
 
+		$is_admin    = current_user_can( Helpers::manage_cap() );
+		$date_ymd    = substr( (string) $booking->start_datetime, 0, 10 );
 		$show_prices = ! empty( Settings::get_value( 'show_prices' ) );
 		$payload     = array(
 			'id'         => (int) $booking->id,
@@ -180,8 +202,12 @@ final class Rest_Controller {
 			'customer'   => trim( $booking->first_name . ' ' . $booking->last_name ),
 			'phone'      => $booking->phone,
 			'services'   => $services,
-			'date_label' => Jalali::dual_label( substr( $booking->start_datetime, 0, 10 ) ),
-			'time'       => substr( $booking->start_datetime, 11, 5 ),
+			'date_label' => $is_admin
+				? Helpers::format_admin_dual_date( $date_ymd )
+				: Helpers::format_customer_date( $date_ymd ),
+			'time'       => $is_admin
+				? Helpers::format_admin_time( (string) $booking->start_datetime )
+				: Helpers::format_customer_time( (string) $booking->start_datetime ),
 			'duration'   => (int) $booking->total_duration,
 		);
 
@@ -256,7 +282,7 @@ final class Rest_Controller {
 	public function month_availability( WP_REST_Request $request ): WP_REST_Response {
 		$year  = absint( $request->get_param( 'year' ) );
 		$month = absint( $request->get_param( 'month' ) );
-		$mode  = Settings::get_value( 'calendar_mode', 'jalali' );
+		$mode  = $this->resolve_calendar_mode( $request );
 		$service_ids = array_filter( array_map( 'absint', (array) $request->get_param( 'service_ids' ) ) );
 		$staff_id    = absint( $request->get_param( 'staff_id' ) ) ?: null;
 
@@ -277,9 +303,15 @@ final class Rest_Controller {
 		$days = Slot_Engine::month_availability( $from, $to, $duration, $staff_id, $service_ids );
 
 		// Enrich with display labels.
+		$is_admin = current_user_can( Helpers::manage_cap() );
 		foreach ( $days as &$day ) {
-			$day['jalali']    = Jalali::format_from_date( $day['date'] );
-			$day['dual']      = Jalali::dual_label( $day['date'] );
+			if ( $is_admin ) {
+				$day['jalali'] = Helpers::format_admin_date( $day['date'] );
+				$day['dual']   = Helpers::format_admin_dual_date( $day['date'] );
+			} else {
+				$day['jalali'] = Jalali::format_from_date( $day['date'] );
+				$day['dual']   = Jalali::dual_label( $day['date'] );
+			}
 			$ts               = strtotime( $day['date'] . ' 12:00:00' );
 			$day['weekday']   = (int) gmdate( 'w', $ts );
 			$day['weekday_fa']= Jalali::weekday_fa()[ $day['weekday'] ];

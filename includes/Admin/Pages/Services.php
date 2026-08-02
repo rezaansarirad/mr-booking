@@ -19,13 +19,10 @@ final class Services {
 	public static function render(): void {
 		$services = Service_Repository::all();
 		$edit_id  = isset( $_GET['edit'] ) ? absint( $_GET['edit'] ) : 0;
+		$creating = ! empty( $_GET['new'] ) && 0 === $edit_id; // phpcs:ignore
+		$editing  = $edit_id > 0;
+		$show_form = $creating || $editing;
 		$service  = $edit_id ? Service_Repository::find( $edit_id ) : null;
-		$is_new   = ! empty( $_GET['new'] ); // phpcs:ignore
-
-		if ( ! $service && $is_new ) {
-			$service = null;
-			$edit_id = 0;
-		}
 
 		include MR_BOOKING_PATH . 'templates/admin/services.php';
 	}

@@ -41,14 +41,14 @@ $next     = gmdate( 'Y-m-d', strtotime( '+1 month', strtotime( $date ) ) );
 				?>
 				<div class="mrb-cal-day">
 					<header>
-						<strong><?php echo esc_html( \MRBooking\Calendar\Jalali::format_from_date( $d ) ); ?></strong>
+						<strong><?php echo esc_html( \MRBooking\Helpers::format_admin_date( $d ) ); ?></strong>
 						<small><?php echo esc_html( $d ); ?></small>
 					</header>
 					<ul>
 						<?php foreach ( $items as $b ) : ?>
 							<li class="mrb-cal-item mrb-badge--<?php echo esc_attr( $b->status ); ?>">
 								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-appointments&view=' . $b->id ) ); ?>">
-									<?php echo esc_html( substr( $b->start_datetime, 11, 5 ) . ' — ' . trim( $b->first_name . ' ' . $b->last_name ) ); ?>
+									<?php echo esc_html( \MRBooking\Helpers::format_admin_time( (string) $b->start_datetime ) . ' — ' . trim( $b->first_name . ' ' . $b->last_name ) ); ?>
 								</a>
 							</li>
 						<?php endforeach; ?>

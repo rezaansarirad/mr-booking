@@ -634,6 +634,60 @@
   margin-inline-end: -2px;
 }
 
+.mrb [hidden] {
+  display: none !important;
+}
+
+.mrb__selected-date {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-bottom: 8px;
+  padding: 7px 10px;
+  border-radius: 12px;
+  background: color-mix(in srgb, var(--mrb-primary) 10%, var(--mrb-card));
+  border: 1px solid color-mix(in srgb, var(--mrb-primary) 24%, var(--mrb-border));
+  box-shadow: 0 4px 12px color-mix(in srgb, var(--mrb-primary) 6%, transparent);
+}
+
+.mrb__selected-date--compact {
+  margin-bottom: 10px;
+  padding: 6px 10px;
+}
+
+.mrb__selected-date__value {
+  flex: 1 1 auto;
+  min-width: 0;
+  font-size: 0.86rem;
+  font-weight: 800;
+  line-height: 1.35;
+  color: var(--mrb-text);
+}
+
+.mrb__selected-date__edit {
+  flex: 0 0 auto;
+  border: 1px solid color-mix(in srgb, var(--mrb-primary) 30%, var(--mrb-border));
+  border-radius: 999px;
+  background: var(--mrb-card);
+  color: var(--mrb-primary);
+  font: inherit;
+  font-size: 0.72rem;
+  font-weight: 700;
+  padding: 5px 10px;
+  cursor: pointer;
+}
+
+.mrb__calendar-scroll {
+  overflow: visible;
+  margin-bottom: 6px;
+  padding-inline: 1px;
+}
+
+.mrb__calendar-scroll .mrb__calendar {
+  margin-top: 6px;
+}
+
 .mrb__weekdays,
 .mrb__calendar {
   display: grid;
@@ -731,15 +785,53 @@
 .mrb__day.is-today.is-holiday .mrb__day-today {
   color: var(--mrb-holiday);
 }
-.mrb__day.is-selected {
+
+.mrb__day.is-selected,
+.mrb__day.is-selected.is-today,
+.mrb__day.is-selected.is-available,
+.mrb__day.is-selected.is-today.is-available,
+.mrb__day.is-selected.is-today.is-no-slots,
+.mrb__day.is-selected.is-today.is-full,
+.mrb__day.is-selected.is-holiday,
+.mrb__day.is-selected.is-no-slots,
+.mrb__day.is-selected.is-full {
   background: var(--mrb-primary);
-  color: var(--mrb-btn-text, var(--mrb-accent));
-  box-shadow: inset 0 0 0 2px color-mix(in srgb, var(--mrb-primary) 70%, var(--mrb-card));
+  color: var(--mrb-btn-text, #fff);
+  opacity: 1;
+  box-shadow:
+    0 0 0 2px color-mix(in srgb, var(--mrb-btn-text, #fff) 35%, transparent),
+    0 8px 18px color-mix(in srgb, var(--mrb-primary) 42%, transparent);
+  transform: translateY(-1px);
+  z-index: 1;
+  position: relative;
 }
-.mrb__day.is-selected .mrb__day-today,
-.mrb__day.is-selected span,
+
+.mrb__day.is-selected.is-today {
+  box-shadow:
+    0 0 0 2px var(--mrb-card),
+    0 0 0 4px var(--mrb-primary),
+    0 10px 22px color-mix(in srgb, var(--mrb-primary) 45%, transparent);
+}
+
+.mrb__day.is-selected span {
+  color: var(--mrb-btn-text, #fff);
+  font-weight: 900;
+}
+
 .mrb__day.is-selected small {
-  color: inherit;
+  color: color-mix(in srgb, var(--mrb-btn-text, #fff) 78%, transparent);
+  opacity: 1;
+}
+
+.mrb__day.is-selected .mrb__day-today {
+  display: block;
+  color: color-mix(in srgb, var(--mrb-btn-text, #fff) 88%, transparent);
+  opacity: 1;
+  font-weight: 800;
+}
+
+.mrb__day.is-selected.is-holiday .mrb__day-today {
+  color: color-mix(in srgb, var(--mrb-btn-text, #fff) 88%, transparent);
 }
 
 .mrb__slots {
@@ -944,6 +1036,10 @@
 }
 
 .mrb__btn--primary {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
   background: var(--mrb-button, var(--mrb-primary));
   color: var(--mrb-btn-text, #fff);
   margin-right: auto;
@@ -954,6 +1050,33 @@
   transform: translateY(-1px);
 }
 
+.mrb__btn--primary:disabled,
+.mrb__btn--primary.is-loading {
+  cursor: wait;
+  transform: none;
+}
+
+.mrb__btn--primary.is-loading::before {
+  content: '';
+  width: 18px;
+  height: 18px;
+  border: 2.5px solid color-mix(in srgb, var(--mrb-btn-loading, var(--mrb-btn-text, #fff)) 28%, transparent);
+  border-top-color: var(--mrb-btn-loading, var(--mrb-btn-text, #fff));
+  border-radius: 50%;
+  animation: mrb-btn-spin 0.7s linear infinite;
+  flex-shrink: 0;
+}
+
+.mrb__btn__label {
+  line-height: 1.2;
+}
+
+@keyframes mrb-btn-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
 .mrb__btn--ghost {
   background: var(--mrb-btn-ghost-bg, #eef5f3);
   color: var(--mrb-btn-ghost-text, var(--mrb-text));
@@ -962,6 +1085,12 @@
 .mrb__btn--ghost:hover {
   background: var(--mrb-btn-ghost-hover, var(--mrb-btn-ghost-bg, #eef5f3));
   transform: translateY(-1px);
+}
+
+.mrb__btn--ghost:disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+  transform: none;
 }
 
 /* iOS-style birth date wheel */

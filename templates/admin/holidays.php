@@ -83,8 +83,10 @@ defined( 'ABSPATH' ) || exit;
 					<?php foreach ( $holidays as $h ) : ?>
 						<article class="mrb-holiday-card">
 							<div class="mrb-holiday-card__date">
-								<strong><?php echo esc_html( \MRBooking\Calendar\Jalali::format_from_date( $h->holiday_date ) ); ?></strong>
-								<span><?php echo esc_html( $h->holiday_date ); ?></span>
+								<strong><?php echo esc_html( \MRBooking\Helpers::format_admin_date( $h->holiday_date ) ); ?></strong>
+								<?php if ( 'both' === \MRBooking\Helpers::admin_calendar_mode() ) : ?>
+									<span><?php echo esc_html( $h->holiday_date ); ?></span>
+								<?php endif; ?>
 							</div>
 							<div class="mrb-holiday-card__body">
 								<h3><?php echo esc_html( $h->title ); ?></h3>
@@ -187,8 +189,10 @@ defined( 'ABSPATH' ) || exit;
 						?>
 						<article class="mrb-holiday-card mrb-holiday-card--special">
 							<div class="mrb-holiday-card__date">
-								<strong><?php echo esc_html( \MRBooking\Calendar\Jalali::format_from_date( $sp->special_date ) ); ?></strong>
-								<span><?php echo esc_html( $sp->special_date ); ?></span>
+								<strong><?php echo esc_html( \MRBooking\Helpers::format_admin_date( $sp->special_date ) ); ?></strong>
+								<?php if ( 'both' === \MRBooking\Helpers::admin_calendar_mode() ) : ?>
+									<span><?php echo esc_html( $sp->special_date ); ?></span>
+								<?php endif; ?>
 							</div>
 							<div class="mrb-holiday-card__body">
 								<h3><?php echo esc_html( $sp->reason ?: __( 'بدون عنوان', 'mr-booking' ) ); ?></h3>

@@ -39,13 +39,8 @@ $statuses = \MRBooking\Helpers::booking_statuses();
 			</div>
 			<div>
 				<strong><?php esc_html_e( '۲) ویجت المنتور', 'mr-booking' ); ?></strong>
-				<?php if ( \MRBooking\Premium\License::hide_branding() ) : ?>
-					<p><?php esc_html_e( 'صفحه را با Elementor باز کنید → از پنل ویجت‌ها «فرم رزرو» را بکشید داخل صفحه.', 'mr-booking' ); ?></p>
-					<p class="description"><?php esc_html_e( 'دسته: رزرو (یا جستجو: رزرو / booking)', 'mr-booking' ); ?></p>
-				<?php else : ?>
-					<p><?php esc_html_e( 'صفحه را با Elementor باز کنید → از پنل ویجت‌ها «فرم رزرو MR Booking» را بکشید داخل صفحه.', 'mr-booking' ); ?></p>
-					<p class="description"><?php esc_html_e( 'دسته: MR Booking (یا جستجو: رزرو / booking)', 'mr-booking' ); ?></p>
-				<?php endif; ?>
+				<p><?php esc_html_e( 'صفحه را با Elementor باز کنید → از پنل ویجت‌ها «فرم رزرو MR Booking» را بکشید داخل صفحه.', 'mr-booking' ); ?></p>
+				<p class="description"><?php esc_html_e( 'دسته: MR Booking (یا جستجو: رزرو / booking)', 'mr-booking' ); ?></p>
 			</div>
 		</div>
 	</section>
@@ -94,7 +89,7 @@ $statuses = \MRBooking\Helpers::booking_statuses();
 					<tbody>
 						<?php foreach ( $today_bookings as $b ) : ?>
 							<tr>
-								<td><?php echo esc_html( substr( $b->start_datetime, 11, 5 ) ); ?></td>
+								<td><?php echo esc_html( \MRBooking\Helpers::format_admin_time( (string) $b->start_datetime ) ); ?></td>
 								<td><?php echo esc_html( trim( $b->first_name . ' ' . $b->last_name ) ); ?></td>
 								<td><?php echo esc_html( $b->phone ); ?></td>
 								<td><span class="mrb-badge mrb-badge--<?php echo esc_attr( $b->status ); ?>"><?php echo esc_html( $statuses[ $b->status ] ?? $b->status ); ?></span></td>
@@ -146,7 +141,7 @@ $statuses = \MRBooking\Helpers::booking_statuses();
 				<tbody>
 					<?php foreach ( $recent as $b ) : ?>
 						<tr data-booking-id="<?php echo esc_attr( (string) $b->id ); ?>">
-							<td><?php echo esc_html( substr( (string) ( $b->created_at ?? '' ), 0, 16 ) ); ?></td>
+							<td><?php echo esc_html( ! empty( $b->created_at ) ? \MRBooking\Helpers::format_admin_datetime( (string) $b->created_at ) : '—' ); ?></td>
 							<td><?php echo esc_html( \MRBooking\Helpers::format_booking_datetime( (string) $b->start_datetime ) ); ?></td>
 							<td><?php echo esc_html( trim( $b->first_name . ' ' . $b->last_name ) ); ?></td>
 							<td dir="ltr"><?php echo esc_html( $b->phone ); ?></td>

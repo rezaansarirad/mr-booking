@@ -55,6 +55,11 @@ $tabs = array(
 		'desc'  => __( 'فعال‌سازی امکانات ویژه و وایت‌لیبل', 'mr-booking' ),
 		'icon'  => 'dashicons-star-filled',
 	),
+	'github'     => array(
+		'label' => __( 'گیت‌هاب', 'mr-booking' ),
+		'desc'  => __( 'پروژه متن‌باز و ستاره دادن', 'mr-booking' ),
+		'icon'  => 'dashicons-heart',
+	),
 );
 
 $current = $tabs[ $tab ] ?? $tabs['general'];
@@ -106,6 +111,7 @@ $colors = array(
 	'color_button'        => array( __( 'دکمه ادامه', 'mr-booking' ), __( 'پس‌زمینه دکمه «ادامه» و «ثبت»', 'mr-booking' ) ),
 	'color_button_hover'  => array( __( 'هاور دکمه ادامه', 'mr-booking' ), __( 'حالت hover دکمه اصلی', 'mr-booking' ) ),
 	'color_btn_text'      => array( __( 'متن دکمه ادامه', 'mr-booking' ), __( 'رنگ نوشته دکمه اصلی', 'mr-booking' ) ),
+	'color_btn_loading'   => array( __( 'لودینگ دکمه ادامه', 'mr-booking' ), __( 'رنگ اسپینر هنگام بارگذاری یا ثبت', 'mr-booking' ) ),
 	'color_btn_ghost_bg'      => array( __( 'دکمه قبلی', 'mr-booking' ), __( 'پس‌زمینه دکمه «قبلی»', 'mr-booking' ) ),
 	'color_btn_ghost_hover'   => array( __( 'هاور دکمه قبلی', 'mr-booking' ), __( 'حالت hover دکمه قبلی', 'mr-booking' ) ),
 	'color_btn_ghost_text'    => array( __( 'متن دکمه قبلی', 'mr-booking' ), __( 'رنگ نوشته دکمه قبلی', 'mr-booking' ) ),
@@ -145,7 +151,7 @@ $color_groups = array(
 	'buttons' => array(
 		'title' => __( 'دکمه‌ها', 'mr-booking' ),
 		'desc'  => __( 'رنگ دکمه‌های «ادامه»، «ثبت» و «قبلی» در فرم رزرو', 'mr-booking' ),
-		'keys'  => array( 'color_button', 'color_button_hover', 'color_btn_text', 'color_btn_ghost_bg', 'color_btn_ghost_hover', 'color_btn_ghost_text' ),
+		'keys'  => array( 'color_button', 'color_button_hover', 'color_btn_text', 'color_btn_loading', 'color_btn_ghost_bg', 'color_btn_ghost_hover', 'color_btn_ghost_text' ),
 	),
 	'typography' => array(
 		'title' => __( 'متن و فیلدها', 'mr-booking' ),
@@ -362,13 +368,7 @@ $color_groups = array(
 									<span class="mrb-switch__ui" aria-hidden="true"></span>
 									<span class="mrb-switch__copy">
 										<strong><?php esc_html_e( 'نمایش ویجت در پیشخوان وردپرس', 'mr-booking' ); ?></strong>
-										<small>
-											<?php
-											echo \MRBooking\Premium\License::hide_branding()
-												? esc_html__( 'خلاصه فعالیت رزرو در صفحه اصلی پیشخوان ادمین', 'mr-booking' )
-												: esc_html__( 'خلاصه فعالیت MR Booking در صفحه اصلی پیشخوان ادمین', 'mr-booking' );
-											?>
-										</small>
+										<small><?php esc_html_e( 'خلاصه فعالیت MR Booking در صفحه اصلی پیشخوان ادمین', 'mr-booking' ); ?></small>
 									</span>
 								</label>
 							</div>
@@ -793,7 +793,7 @@ $color_groups = array(
 						<section class="mrb-settings__section">
 							<h3><?php esc_html_e( 'فعال‌سازی پریمیوم', 'mr-booking' ); ?></h3>
 							<p class="mrb-settings__hint">
-								<?php esc_html_e( 'با وارد کردن کد لایسنس، امکانات ویژه مثل مخفی‌کردن برندینگ «MR Booking» از فرم رزرو فعال می‌شود.', 'mr-booking' ); ?>
+								<?php esc_html_e( 'با وارد کردن کد لایسنس، امکان مخفی‌کردن برند «MR Booking» فقط در فرم رزرو عمومی فعال می‌شود.', 'mr-booking' ); ?>
 							</p>
 							<div class="mrb-settings__grid">
 								<label class="mrb-field" style="grid-column:1/-1">
@@ -828,16 +828,36 @@ $color_groups = array(
 									/>
 									<span class="mrb-switch__ui" aria-hidden="true"></span>
 									<span class="mrb-switch__copy">
-										<strong><?php esc_html_e( 'مخفی کردن متن MR Booking', 'mr-booking' ); ?> <em class="mrb-premium-tag"><?php esc_html_e( 'پریمیوم', 'mr-booking' ); ?></em></strong>
+										<strong><?php esc_html_e( 'مخفی کردن برند MR Booking در فرم رزرو', 'mr-booking' ); ?> <em class="mrb-premium-tag"><?php esc_html_e( 'پریمیوم', 'mr-booking' ); ?></em></strong>
 										<small>
 											<?php
 											echo $premium_active
-												? esc_html__( 'برندینگ «MR Booking» از فرم رزرو، پیشخوان و گزینه‌های ظاهری حذف می‌شود.', 'mr-booking' )
+												? esc_html__( 'متن «MR Booking» بالای فرم رزرو (شورت‌کد و المنتور) برای بازدیدکنندگان سایت نمایش داده نمی‌شود. منو و تنظیمات پنل بدون تغییر می‌مانند.', 'mr-booking' )
 												: esc_html__( 'ابتدا کد پریمیوم را وارد و ذخیره کنید؛ سپس این گزینه اعمال می‌شود. اگر هم‌زمان با کد ذخیره شود هم فعال می‌گردد.', 'mr-booking' );
 											?>
 										</small>
 									</span>
 								</label>
+							</div>
+						</section>
+					<?php elseif ( 'github' === $tab ) : ?>
+						<section class="mrb-settings__section mrb-settings__section--github">
+							<h3><?php esc_html_e( 'پروژه متن‌باز MR Booking', 'mr-booking' ); ?></h3>
+							<p class="mrb-settings__hint">
+								<?php esc_html_e( 'اگر از این افزونه راضی هستید، با ستاره دادن در گیت‌هاب از توسعه آن حمایت کنید.', 'mr-booking' ); ?>
+							</p>
+							<div class="mrb-github-card">
+								<div class="mrb-github-card__icon" aria-hidden="true">
+									<span class="dashicons dashicons-star-filled"></span>
+								</div>
+								<div class="mrb-github-card__body">
+									<strong><?php esc_html_e( 'rezaansarirad/mr-booking', 'mr-booking' ); ?></strong>
+									<p><?php esc_html_e( 'سورس کامل، گزارش باگ، پیشنهاد قابلیت و به‌روزرسانی‌ها در گیت‌هاب.', 'mr-booking' ); ?></p>
+									<a class="button button-primary mrb-github-card__btn" href="https://github.com/rezaansarirad/mr-booking" target="_blank" rel="noopener noreferrer">
+										<span class="dashicons dashicons-external"></span>
+										<?php esc_html_e( 'رفتن به گیت‌هاب و ستاره دادن', 'mr-booking' ); ?>
+									</a>
+								</div>
 							</div>
 						</section>
 					<?php endif; ?>

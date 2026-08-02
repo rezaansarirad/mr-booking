@@ -13,7 +13,9 @@ use Elementor\Controls_Manager;
 use Elementor\Group_Control_Typography;
 use Elementor\Widget_Base;
 use MRBooking\Frontend\Shortcode;
+use MRBooking\Helpers;
 use MRBooking\Services\Service_Repository;
+use MRBooking\Settings\Settings;
 use MRBooking\Staff\Staff_Repository;
 
 defined( 'ABSPATH' ) || exit;
@@ -25,10 +27,7 @@ final class Booking_Form extends Widget_Base {
 	}
 
 	public function get_title(): string {
-		if ( \MRBooking\Premium\License::hide_branding() ) {
-			return __( 'فرم رزرو', 'mr-booking' );
-		}
-		return __( 'فرم رزرو MR Booking', 'mr-booking' );
+		return Helpers::plugin_name();
 	}
 
 	public function get_icon(): string {
@@ -73,6 +72,28 @@ final class Booking_Form extends Widget_Base {
 		$this->register_style_card();
 	}
 
+	/**
+	 * @var array<string, mixed>|null
+	 */
+	private ?array $plugin_settings = null;
+
+	/**
+	 * @return array<string, mixed>
+	 */
+	private function plugin_settings(): array {
+		if ( null === $this->plugin_settings ) {
+			$this->plugin_settings = Settings::get();
+		}
+
+		return $this->plugin_settings;
+	}
+
+	private function plugin_color( string $key, string $fallback = '#000000' ): string {
+		$settings = $this->plugin_settings();
+
+		return Helpers::normalize_hex_color( (string) ( $settings[ $key ] ?? '' ), $fallback );
+	}
+
 	private function register_content_controls(): void {
 		$this->start_controls_section(
 			'section_content',
@@ -102,9 +123,7 @@ final class Booking_Form extends Widget_Base {
 			)
 		);
 
-		$help = \MRBooking\Premium\License::hide_branding()
-			? __( 'رنگ‌ها، فونت و دکمه‌ها را از تب Style همین ویجت تنظیم کنید. خدمات و قوانین رزرو از منوی رزرو در پیشخوان مدیریت می‌شوند.', 'mr-booking' )
-			: __( 'رنگ‌ها، فونت و دکمه‌ها را از تب Style همین ویجت تنظیم کنید. خدمات و قوانین رزرو از منوی MR Booking در پیشخوان مدیریت می‌شوند.', 'mr-booking' );
+		$help = __( 'رنگ‌ها، فونت و دکمه‌ها را از تب Style همین ویجت تنظیم کنید. مقادیر پیش‌فرض از تنظیمات ظاهر MR Booking خوانده می‌شوند. خدمات و قوانین رزرو از منوی MR Booking در پیشخوان مدیریت می‌شوند.', 'mr-booking' );
 
 		$this->add_control(
 			'help',
@@ -132,6 +151,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ اصلی / مراحل', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_primary', '#d4af37' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-primary: {{VALUE}}; --mrb-available: {{VALUE}};',
 				),
@@ -143,6 +163,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ متن عمومی', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_text', '#134e4a' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-text: {{VALUE}}; --mrb-btn-ghost-text: {{VALUE}}; color: {{VALUE}};',
 				),
@@ -154,6 +175,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ عنوان', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_label', '#134e4a' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'         => '--mrb-title: {{VALUE}};',
 					'{{WRAPPER}} .mrb__title'  => 'color: {{VALUE}};',
@@ -167,6 +189,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه بیرونی', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_background', '#f7f5f0' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-bg: {{VALUE}}; background: {{VALUE}};',
 				),
@@ -178,6 +201,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه کارت فرم', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_card', '#ffffff' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'           => '--mrb-card: {{VALUE}};',
 					'{{WRAPPER}} .mrb__shell'    => 'background: {{VALUE}};',
@@ -191,6 +215,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ حاشیه', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_border', '#e5dfd0' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-border: {{VALUE}};',
 				),
@@ -202,6 +227,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ تاکیدی', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_accent', '#1a2332' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-accent: {{VALUE}};',
 				),
@@ -281,6 +307,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_button', '#d4af37' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                 => '--mrb-button: {{VALUE}}; --mrb-button-hover: {{VALUE}};',
 					'{{WRAPPER}} .mrb__btn--primary'   => 'background-color: {{VALUE}};',
@@ -293,6 +320,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه هاور', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_button_hover', '#c9a030' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                       => '--mrb-button-hover: {{VALUE}};',
 					'{{WRAPPER}} .mrb__btn--primary:hover'   => 'background-color: {{VALUE}};',
@@ -305,9 +333,22 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ متن', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_btn_text', '#1a2332' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'               => '--mrb-btn-text: {{VALUE}};',
 					'{{WRAPPER}} .mrb__btn--primary' => 'color: {{VALUE}};',
+				),
+			)
+		);
+
+		$this->add_control(
+			'btn_primary_loading',
+			array(
+				'label'     => __( 'رنگ لودینگ', 'mr-booking' ),
+				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_btn_loading', '#1a2332' ),
+				'selectors' => array(
+					'{{WRAPPER}} .mrb' => '--mrb-btn-loading: {{VALUE}};',
 				),
 			)
 		);
@@ -335,6 +376,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_btn_ghost_bg', '#f5f0e6' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'             => '--mrb-btn-ghost-bg: {{VALUE}};',
 					'{{WRAPPER}} .mrb__btn--ghost' => 'background-color: {{VALUE}};',
@@ -347,6 +389,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ متن', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_btn_ghost_text', '#1a2332' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'             => '--mrb-btn-ghost-text: {{VALUE}};',
 					'{{WRAPPER}} .mrb__btn--ghost' => 'color: {{VALUE}};',
@@ -359,6 +402,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه هاور', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_btn_ghost_hover', '#ebe4d6' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                   => '--mrb-btn-ghost-hover: {{VALUE}};',
 					'{{WRAPPER}} .mrb__btn--ghost:hover' => 'background-color: {{VALUE}};',
@@ -402,6 +446,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه فیلد', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_card', '#ffffff' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-input-bg: {{VALUE}};',
 					'{{WRAPPER}} .mrb__fields input, {{WRAPPER}} .mrb__fields select, {{WRAPPER}} .mrb__fields textarea' => 'background-color: {{VALUE}};',
@@ -414,6 +459,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ متن فیلد', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_input_text', '#1a2332' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-input-text: {{VALUE}};',
 					'{{WRAPPER}} .mrb__fields input, {{WRAPPER}} .mrb__fields select, {{WRAPPER}} .mrb__fields textarea, {{WRAPPER}} .mrb__staff-select, {{WRAPPER}} .mrb__birth-trigger' => 'color: {{VALUE}};',
@@ -426,6 +472,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ Placeholder', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_input_placeholder', '#94a3b8' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-input-placeholder: {{VALUE}};',
 					'{{WRAPPER}} .mrb__fields input::placeholder, {{WRAPPER}} .mrb__fields textarea::placeholder' => 'color: {{VALUE}};',
@@ -439,6 +486,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ رادیو (انتخاب‌شده)', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_radio_active', '#d4af37' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-radio-active: {{VALUE}};',
 					'{{WRAPPER}} .mrb__booking-for input[type="radio"]' => 'accent-color: {{VALUE}};',
@@ -451,6 +499,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ برچسب', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_label', '#1a2332' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb' => '--mrb-label: {{VALUE}}; --mrb-title: {{VALUE}};',
 					'{{WRAPPER}} .mrb__fields label, {{WRAPPER}} .mrb__title, {{WRAPPER}} .mrb__section-title' => 'color: {{VALUE}};',
@@ -493,6 +542,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه کارت', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_card', '#ffffff' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                  => '--mrb-service-card: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service'         => 'background-color: {{VALUE}};',
@@ -506,6 +556,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه انتخاب‌شده', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_card_selected', '#fff8e7' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                      => '--mrb-service-card-selected: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service.is-selected' => 'background-color: {{VALUE}};',
@@ -518,6 +569,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'حاشیه کارت', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_card_border', '#e5dfd0' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'          => '--mrb-service-card-border: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service' => 'border-color: {{VALUE}};',
@@ -530,6 +582,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'نام خدمت', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_text', '#1a2332' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                      => '--mrb-service-text: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service-main strong' => 'color: {{VALUE}};',
@@ -542,6 +595,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'توضیحات خدمت', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_desc', '#64748b' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'          => '--mrb-service-desc: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service p' => 'color: {{VALUE}};',
@@ -554,6 +608,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'پس‌زمینه مدت زمان', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_duration_bg', '#fff8e7' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                 => '--mrb-service-duration-bg: {{VALUE}};',
 					'{{WRAPPER}} .mrb__duration-pill'  => 'background-color: {{VALUE}};',
@@ -566,6 +621,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'متن مدت زمان', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_duration_text', '#b8941f' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                 => '--mrb-service-duration-text: {{VALUE}};',
 					'{{WRAPPER}} .mrb__duration-pill'  => 'color: {{VALUE}};',
@@ -578,6 +634,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'کادر مدت — انتخاب‌شده', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_duration_bg_selected', '#f0e6c8' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                                      => '--mrb-service-duration-bg-selected: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service.is-selected .mrb__duration-pill' => 'background-color: {{VALUE}};',
@@ -590,6 +647,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'رنگ قیمت', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_price', '#d4af37' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                              => '--mrb-service-price: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service-price, {{WRAPPER}} .mrb__service em' => 'color: {{VALUE}};',
@@ -602,6 +660,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'حلقه انتخاب', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_check_border', '#d1d5db' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                => '--mrb-service-check-border: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service-check'  => 'border-color: {{VALUE}};',
@@ -614,6 +673,7 @@ final class Booking_Form extends Widget_Base {
 			array(
 				'label'     => __( 'تیک انتخاب‌شده', 'mr-booking' ),
 				'type'      => Controls_Manager::COLOR,
+				'default'   => $this->plugin_color( 'color_service_check_active', '#d4af37' ),
 				'selectors' => array(
 					'{{WRAPPER}} .mrb'                                      => '--mrb-service-check-active: {{VALUE}};',
 					'{{WRAPPER}} .mrb__service.is-selected'                   => 'border-color: {{VALUE}}; box-shadow: inset 0 0 0 1px {{VALUE}};',
@@ -736,12 +796,9 @@ final class Booking_Form extends Widget_Base {
 	}
 
 	protected function content_template(): void {
-		$title = \MRBooking\Premium\License::hide_branding()
-			? __( 'فرم رزرو', 'mr-booking' )
-			: __( 'فرم رزرو MR Booking', 'mr-booking' );
 		?>
 		<div class="elementor-alert elementor-alert-info" style="text-align:center;padding:24px;direction:rtl">
-			<strong><?php echo esc_html( $title ); ?></strong>
+			<strong><?php echo esc_html__( 'فرم رزرو MR Booking', 'mr-booking' ); ?></strong>
 			<p style="margin:8px 0 0"><?php echo esc_html__( 'از تب Style رنگ، فونت و دکمه‌ها را تنظیم کنید. پیش‌نمایش کامل در فرانت‌اند دیده می‌شود.', 'mr-booking' ); ?></p>
 		</div>
 		<?php

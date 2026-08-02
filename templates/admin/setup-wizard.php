@@ -510,11 +510,7 @@ $steps = array(
 				<div class="mrb-setup__done-hint">
 					<p><?php esc_html_e( 'پس از اتمام، این شورت‌کد را در یک صفحه قرار دهید:', 'mr-booking' ); ?></p>
 					<code>[mr_booking]</code>
-					<?php if ( \MRBooking\Premium\License::hide_branding() ) : ?>
-						<p class="mrb-setup__hint"><?php esc_html_e( 'یا در Elementor ویجت «فرم رزرو» را اضافه کنید.', 'mr-booking' ); ?></p>
-					<?php else : ?>
-						<p class="mrb-setup__hint"><?php esc_html_e( 'یا در Elementor ویجت «فرم رزرو MR Booking» را اضافه کنید.', 'mr-booking' ); ?></p>
-					<?php endif; ?>
+					<p class="mrb-setup__hint"><?php esc_html_e( 'یا در Elementor ویجت «فرم رزرو MR Booking» را اضافه کنید.', 'mr-booking' ); ?></p>
 				</div>
 			<?php endif; ?>
 

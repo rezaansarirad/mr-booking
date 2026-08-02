@@ -370,6 +370,7 @@
     if (!state.selectedServices.length) return;
     el.calHint.textContent = cfg.i18n.loading;
     const params = new URLSearchParams({ year: state.calYear, month: state.calMonth });
+    params.set('calendar_mode', cfg.settings.calendar_mode || 'jalali');
     state.selectedServices.forEach((id) => params.append('service_ids[]', id));
     if (state.staffId) params.set('staff_id', state.staffId);
     const data = await api('/availability/month?' + params.toString());

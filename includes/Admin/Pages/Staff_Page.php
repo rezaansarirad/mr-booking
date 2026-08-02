@@ -25,19 +25,21 @@ final class Staff_Page {
 		$hours_mode = (string) ( $settings['hours_mode'] ?? 'global' );
 		$staff_list = Staff_Repository::all();
 		$edit_id    = isset( $_GET['edit'] ) ? absint( $_GET['edit'] ) : 0;
+		$creating   = ! empty( $_GET['new'] ) && 0 === $edit_id;
 		$editing    = $edit_id > 0;
-		$open_new   = ! empty( $_GET['new'] );
+		$show_form  = $creating || $editing;
 		$staff      = $edit_id ? Staff_Repository::find( $edit_id ) : null;
 		$services   = Service_Repository::all( 'active' );
 		$linked     = $staff ? Staff_Repository::service_ids( (int) $staff->id ) : array();
 		$labels     = Helpers::weekday_labels();
 		$order      = array( 6, 0, 1, 2, 3, 4, 5 );
-		$hours_grouped   = array();
-		$blocks_grouped  = array();
-		$global_break       = max( 0, (int) ( $settings['break_between_appointments'] ?? 0 ) );
-		$new_hours_grouped  = Hours_Repository::all_grouped( null );
+		$hours_grouped  = array();
+		$blocks_grouped = array();
+		$global_break   = max( 0, (int) ( $settings['break_between_appointments'] ?? 0 ) );
 
-		if ( $staff ) {
+		if ( $creating ) {
+			$hours_grouped = Hours_Repository::all_grouped( null );
+		} elseif ( $staff ) {
 			$blocks_grouped = Staff_Time_Block_Repository::grouped_by_day( (int) $staff->id );
 			if ( 'per_staff' === $hours_mode ) {
 				$hours_grouped = Hours_Repository::all_grouped( (int) $staff->id );

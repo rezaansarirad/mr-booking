@@ -9,8 +9,7 @@ declare(strict_types=1);
 
 namespace MRBooking\Export;
 
-use MRBooking\Bookings\Booking_Repository;
-use MRBooking\Customers\Customer_Repository;
+use MRBooking\Helpers;
 
 defined( 'ABSPATH' ) || exit;
 
@@ -51,8 +50,8 @@ final class Exporter {
 					$c->last_name,
 					$c->phone,
 					$c->email,
-					$c->birth_date,
-					$c->created_at,
+					! empty( $c->birth_date ) ? Helpers::format_admin_date( (string) $c->birth_date ) : '',
+					! empty( $c->created_at ) ? Helpers::format_admin_datetime( (string) $c->created_at ) : '',
 				)
 			);
 		}
@@ -94,8 +93,8 @@ final class Exporter {
 					$b->booking_code,
 					trim( $b->first_name . ' ' . $b->last_name ),
 					$b->phone,
-					$b->start_datetime,
-					$b->end_datetime,
+					Helpers::format_admin_datetime( (string) $b->start_datetime ),
+					Helpers::format_admin_datetime( (string) $b->end_datetime ),
 					$b->status,
 					$b->total_price,
 					$b->total_duration,

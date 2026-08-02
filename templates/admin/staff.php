@@ -8,34 +8,41 @@
  * @var list<int>    $linked
  * @var object|null  $staff
  * @var int          $edit_id
+ * @var bool         $creating
  * @var bool         $editing
+ * @var bool         $show_form
  * @var string       $hours_mode
  * @var array<int, list<object>> $hours_grouped
  * @var array<int, list<array{start:string,end:string,label:string}>> $blocks_grouped
  * @var array<int, string> $labels
  * @var list<int>    $order
- * @var bool         $open_new
  * @var int          $global_break
- * @var array<int, list<object>> $new_hours_grouped
  */
 
 defined( 'ABSPATH' ) || exit;
+
+use MRBooking\Helpers;
 
 $service_map = array();
 foreach ( $services as $svc ) {
 	$service_map[ (int) $svc->id ] = $svc;
 }
+
+$new_staff_url = admin_url( 'admin.php?page=mr-booking-staff&new=1' );
+$list_url      = admin_url( 'admin.php?page=mr-booking-staff' );
 ?>
-<div class="wrap mrb-admin mrb-staff-page" dir="rtl"<?php echo ! empty( $open_new ) ? ' data-open-staff-dialog="1"' : ''; ?>>
+<div class="wrap mrb-admin mrb-staff-page" dir="rtl">
 	<header class="mrb-admin__header">
 		<div>
 			<p class="mrb-admin__eyebrow"><?php esc_html_e( 'MR Booking', 'mr-booking' ); ?></p>
 			<h1><?php esc_html_e( 'پرسنل', 'mr-booking' ); ?></h1>
 			<p class="mrb-staff-page__lead"><?php esc_html_e( 'پرسنل را مدیریت کنید و خدمات قابل ارائه هر نفر را مشخص کنید.', 'mr-booking' ); ?></p>
 		</div>
-		<button type="button" class="button button-primary" id="mrb-staff-new-open">
-			<?php esc_html_e( '+ پرسنل جدید', 'mr-booking' ); ?>
-		</button>
+		<?php if ( ! $creating ) : ?>
+			<a class="button button-primary" href="<?php echo esc_url( $new_staff_url ); ?>">
+				<?php esc_html_e( '+ پرسنل جدید', 'mr-booking' ); ?>
+			</a>
+		<?php endif; ?>
 	</header>
 
 	<?php if ( ! empty( $_GET['saved'] ) ) : // phpcs:ignore ?>
@@ -45,7 +52,7 @@ foreach ( $services as $svc ) {
 		<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'پرسنل حذف شد.', 'mr-booking' ); ?></p></div>
 	<?php endif; ?>
 
-	<div class="mrb-staff-layout <?php echo $editing ? 'is-editing' : ''; ?>">
+	<div class="mrb-staff-layout <?php echo $show_form ? 'is-editing' : ''; ?>">
 		<section class="mrb-panel mrb-staff-list-panel">
 			<h2>
 				<?php esc_html_e( 'لیست پرسنل', 'mr-booking' ); ?>
@@ -131,11 +138,17 @@ foreach ( $services as $svc ) {
 			<?php endif; ?>
 		</section>
 
-		<?php if ( $editing ) : ?>
+		<?php if ( $show_form ) : ?>
 			<section class="mrb-panel mrb-staff-editor">
 				<div class="mrb-staff-editor__head">
-					<h2><?php esc_html_e( 'ویرایش پرسنل', 'mr-booking' ); ?></h2>
-					<a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-staff' ) ); ?>"><?php esc_html_e( 'بستن', 'mr-booking' ); ?></a>
+					<h2>
+						<?php
+						echo $creating
+							? esc_html__( 'پرسنل جدید', 'mr-booking' )
+							: esc_html__( 'ویرایش پرسنل', 'mr-booking' );
+						?>
+					</h2>
+					<a href="<?php echo esc_url( $list_url ); ?>"><?php esc_html_e( 'بستن', 'mr-booking' ); ?></a>
 				</div>
 
 				<form method="post" action="<?php echo esc_url( admin_url( 'admin-post.php' ) ); ?>" class="mrb-form mrb-staff-form">
@@ -145,25 +158,27 @@ foreach ( $services as $svc ) {
 
 					<div class="mrb-staff-form__grid">
 						<label class="mrb-field">
-							<span class="mrb-field__label"><?php esc_html_e( 'نام', 'mr-booking' ); ?></span>
-							<input type="text" name="first_name" required value="<?php echo esc_attr( (string) ( $staff?->first_name ?? '' ) ); ?>" />
+							<span class="mrb-field__label"><?php esc_html_e( 'نام', 'mr-booking' ); ?> *</span>
+							<input type="text" name="first_name" required autocomplete="given-name" value="<?php echo esc_attr( (string) ( $staff?->first_name ?? '' ) ); ?>" />
 						</label>
 						<label class="mrb-field">
-							<span class="mrb-field__label"><?php esc_html_e( 'نام خانوادگی', 'mr-booking' ); ?></span>
-							<input type="text" name="last_name" required value="<?php echo esc_attr( (string) ( $staff?->last_name ?? '' ) ); ?>" />
+							<span class="mrb-field__label"><?php esc_html_e( 'نام خانوادگی', 'mr-booking' ); ?> *</span>
+							<input type="text" name="last_name" required autocomplete="family-name" value="<?php echo esc_attr( (string) ( $staff?->last_name ?? '' ) ); ?>" />
 						</label>
 						<label class="mrb-field">
 							<span class="mrb-field__label"><?php esc_html_e( 'موبایل', 'mr-booking' ); ?></span>
-							<input type="text" name="phone" value="<?php echo esc_attr( (string) ( $staff?->phone ?? '' ) ); ?>" placeholder="09xxxxxxxxx" />
+							<input type="tel" name="phone" value="<?php echo esc_attr( (string) ( $staff?->phone ?? '' ) ); ?>" placeholder="09xxxxxxxxx" autocomplete="tel" />
 						</label>
 						<label class="mrb-field">
 							<span class="mrb-field__label"><?php esc_html_e( 'ایمیل', 'mr-booking' ); ?></span>
-							<input type="email" name="email" value="<?php echo esc_attr( (string) ( $staff?->email ?? '' ) ); ?>" />
+							<input type="email" name="email" value="<?php echo esc_attr( (string) ( $staff?->email ?? '' ) ); ?>" autocomplete="email" />
 						</label>
-						<label class="mrb-field">
-							<span class="mrb-field__label"><?php esc_html_e( 'شناسه تصویر', 'mr-booking' ); ?></span>
-							<input type="number" name="image_id" value="<?php echo esc_attr( (string) ( $staff?->image_id ?? '' ) ); ?>" />
-						</label>
+						<?php if ( ! $creating ) : ?>
+							<label class="mrb-field">
+								<span class="mrb-field__label"><?php esc_html_e( 'شناسه تصویر', 'mr-booking' ); ?></span>
+								<input type="number" name="image_id" value="<?php echo esc_attr( (string) ( $staff?->image_id ?? '' ) ); ?>" />
+							</label>
+						<?php endif; ?>
 						<label class="mrb-field">
 							<span class="mrb-field__label"><?php esc_html_e( 'وضعیت', 'mr-booking' ); ?></span>
 							<select name="status">
@@ -182,22 +197,67 @@ foreach ( $services as $svc ) {
 						<?php if ( empty( $services ) ) : ?>
 							<p class="mrb-empty"><?php esc_html_e( 'ابتدا از بخش خدمات، حداقل یک خدمت فعال تعریف کنید.', 'mr-booking' ); ?></p>
 						<?php else : ?>
-							<div class="mrb-check-grid" role="group" aria-label="<?php esc_attr_e( 'خدمات پرسنل', 'mr-booking' ); ?>">
+							<div class="mrb-staff-service-grid" role="group" aria-label="<?php esc_attr_e( 'خدمات پرسنل', 'mr-booking' ); ?>">
 								<?php foreach ( $services as $svc ) : ?>
-									<label class="mrb-check-chip">
+									<?php
+									$is_linked = in_array( (int) $svc->id, $linked, true );
+									$svc_color = Helpers::normalize_hex_color( (string) ( $svc->color ?? '' ), '#0f766e' );
+									?>
+									<label
+										class="mrb-staff-service-card"
+										style="<?php echo esc_attr( '--mrb-svc-color: ' . $svc_color ); ?>"
+									>
 										<input
 											type="checkbox"
 											name="service_ids[]"
 											value="<?php echo esc_attr( (string) $svc->id ); ?>"
-											<?php checked( in_array( (int) $svc->id, $linked, true ) ); ?>
+											<?php checked( $is_linked ); ?>
 										/>
-										<span class="mrb-check-chip__label"><?php echo esc_html( $svc->name ); ?></span>
-										<span class="mrb-check-chip__meta"><?php echo esc_html( \MRBooking\Helpers::format_duration( (int) $svc->duration ) ); ?></span>
+										<span class="mrb-staff-service-card__accent" aria-hidden="true"></span>
+										<span class="mrb-staff-service-card__check" aria-hidden="true">
+											<svg viewBox="0 0 16 16" width="12" height="12" focusable="false"><path fill="currentColor" d="M6.2 11.6 3.4 8.8l-.9.9 3.7 3.7 7.4-7.4-.9-.9z"/></svg>
+										</span>
+										<span class="mrb-staff-service-card__body">
+											<strong class="mrb-staff-service-card__name"><?php echo esc_html( $svc->name ); ?></strong>
+											<span class="mrb-staff-service-card__duration">
+												<span class="dashicons dashicons-clock" aria-hidden="true"></span>
+												<?php echo esc_html( Helpers::format_duration( (int) $svc->duration ) ); ?>
+											</span>
+										</span>
 									</label>
 								<?php endforeach; ?>
 							</div>
 						<?php endif; ?>
 					</div>
+
+					<?php if ( $creating || ( $staff && 'per_staff' === $hours_mode ) ) : ?>
+						<div class="mrb-staff-schedule-box">
+							<div class="mrb-staff-schedule-box__head">
+								<strong><?php esc_html_e( 'ساعات کاری', 'mr-booking' ); ?></strong>
+								<?php if ( $creating && 'global' === $hours_mode ) : ?>
+									<span><?php esc_html_e( 'ساعات اولیه پرسنل — در حالت «ساعات کلی» از منوی ساعات کاری هم استفاده می‌شود.', 'mr-booking' ); ?></span>
+								<?php else : ?>
+									<span><?php esc_html_e( 'روزها و بازه‌های کاری این پرسنل را مشخص کنید. می‌توانید چند بازه در روز تعریف کنید.', 'mr-booking' ); ?></span>
+								<?php endif; ?>
+							</div>
+							<label class="mrb-check mrb-hours-apply-all" style="margin-bottom:12px">
+								<input type="checkbox" name="apply_all" value="1" />
+								<span>
+									<strong><?php esc_html_e( 'اعمال ساعات یکسان برای همه روزهای باز', 'mr-booking' ); ?></strong>
+								</span>
+							</label>
+							<?php
+							$grouped     = $hours_grouped;
+							$name_prefix = 'days';
+							include MR_BOOKING_PATH . 'templates/admin/partials/week-hours-grid.php';
+							?>
+						</div>
+					<?php elseif ( $staff ) : ?>
+						<p class="mrb-settings__hint">
+							<?php esc_html_e( 'ساعات کاری کلی سازمان از منوی «ساعات کاری» تنظیم می‌شود.', 'mr-booking' ); ?>
+							<a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-hours' ) ); ?>"><?php esc_html_e( 'مشاهده ساعات کلی', 'mr-booking' ); ?></a>
+						</p>
+					<?php endif; ?>
 
 					<?php if ( $staff ) : ?>
 						<div class="mrb-staff-schedule-box">
@@ -224,31 +284,6 @@ foreach ( $services as $svc ) {
 							</label>
 						</div>
 
-						<?php if ( 'per_staff' === $hours_mode ) : ?>
-							<div class="mrb-staff-schedule-box">
-								<div class="mrb-staff-schedule-box__head">
-									<strong><?php esc_html_e( 'روزها و ساعات کاری این پرسنل', 'mr-booking' ); ?></strong>
-									<span><?php esc_html_e( 'ساعات جدا از سایر پرسنل. می‌توانید چند بازه در روز تعریف کنید.', 'mr-booking' ); ?></span>
-								</div>
-								<label class="mrb-check mrb-hours-apply-all" style="margin-bottom:12px">
-									<input type="checkbox" name="apply_all" value="1" />
-									<span>
-										<strong><?php esc_html_e( 'اعمال ساعات یکسان برای همه روزهای باز', 'mr-booking' ); ?></strong>
-									</span>
-								</label>
-								<?php
-								$grouped     = $hours_grouped;
-								$name_prefix = 'days';
-								include MR_BOOKING_PATH . 'templates/admin/partials/week-hours-grid.php';
-								?>
-							</div>
-						<?php else : ?>
-							<p class="mrb-settings__hint">
-								<?php esc_html_e( 'ساعات کاری کلی سازمان از منوی «ساعات کاری» تنظیم می‌شود.', 'mr-booking' ); ?>
-								<a href="<?php echo esc_url( admin_url( 'admin.php?page=mr-booking-hours' ) ); ?>"><?php esc_html_e( 'مشاهده ساعات کلی', 'mr-booking' ); ?></a>
-							</p>
-						<?php endif; ?>
-
 						<div class="mrb-staff-schedule-box">
 							<div class="mrb-staff-schedule-box__head">
 								<strong><?php esc_html_e( 'ساعات مسدود (غیرقابل رزرو)', 'mr-booking' ); ?></strong>
@@ -263,6 +298,4 @@ foreach ( $services as $svc ) {
 			</section>
 		<?php endif; ?>
 	</div>
-
-	<?php include MR_BOOKING_PATH . 'templates/admin/partials/staff-new-dialog.php'; ?>
 </div>
