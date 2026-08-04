@@ -527,4 +527,111 @@ final class Helpers {
 
 		return 0 === strpos( (string) $locale, 'fa' );
 	}
+
+	/**
+	 * Admin notice for customer notification channel result after status change.
+	 *
+	 * @param array{attempted?:bool,sent?:bool,skip_reason?:string|null} $result
+	 * @return array{type:string,message:string}|null
+	 */
+	public static function notify_feedback_notice( string $channel, array $result ): ?array {
+		$sent      = ! empty( $result['sent'] );
+		$attempted = ! empty( $result['attempted'] );
+		$skip      = (string) ( $result['skip_reason'] ?? '' );
+
+		if ( 'email' === $channel ) {
+			if ( $sent ) {
+				return array(
+					'type'    => 'success',
+					'message' => __( 'ایمیل تأیید برای مشتری ارسال شد.', 'mr-booking' ),
+				);
+			}
+
+			switch ( $skip ) {
+				case 'customer_email_missing':
+					return array(
+						'type'    => 'warning',
+						'message' => __( 'رزرو تأیید شد، اما مشتری ایمیل ثبت نکرده — ایمیل تأیید ارسال نشد.', 'mr-booking' ),
+					);
+				case 'email_disabled':
+					return array(
+						'type'    => 'warning',
+						'message' => __( 'رزرو تأیید شد، اما ارسال ایمیل در تنظیمات غیرفعال است.', 'mr-booking' ),
+					);
+				case 'notify_on_confirm_disabled':
+					return array(
+						'type'    => 'warning',
+						'message' => __( 'رزرو تأیید شد، اما «ارسال اعلان تأیید به مشتری» در بخش اعلان‌ها خاموش است.', 'mr-booking' ),
+					);
+				case 'wp_mail_failed':
+					return array(
+						'type'    => 'error',
+						'message' => __( 'رزرو تأیید شد، اما ارسال ایمیل ناموفق بود. تنظیمات SMTP/ایمیل سرور را بررسی کنید.', 'mr-booking' ),
+					);
+				case 'email_template_empty':
+					return array(
+						'type'    => 'warning',
+						'message' => __( 'رزرو تأیید شد؛ قالب ایمیل تأیید خالی است.', 'mr-booking' ),
+					);
+			}
+
+			if ( $attempted ) {
+				return array(
+					'type'    => 'warning',
+					'message' => __( 'رزرو تأیید شد؛ اعلان ایمیل به مشتری ارسال نشد.', 'mr-booking' ),
+				);
+			}
+
+			return null;
+		}
+
+		if ( 'sms' === $channel ) {
+			if ( $sent ) {
+				return array(
+					'type'    => 'success',
+					'message' => __( 'پیامک تأیید برای مشتری ارسال شد.', 'mr-booking' ),
+				);
+			}
+
+			if ( $attempted && $skip ) {
+				return array(
+					'type'    => 'error',
+					'message' => sprintf(
+						/* translators: %s: provider error message */
+						__( 'رزرو تأیید شد، اما ارسال پیامک ناموفق بود: %s', 'mr-booking' ),
+						$skip
+					),
+				);
+			}
+
+			if ( $attempted ) {
+				return array(
+					'type'    => 'error',
+					'message' => __( 'رزرو تأیید شد، اما ارسال پیامک ناموفق بود. کلید API و شماره فرستنده را در تنظیمات SMS بررسی کنید.', 'mr-booking' ),
+				);
+			}
+
+			switch ( $skip ) {
+				case 'phone_missing':
+					return array(
+						'type'    => 'warning',
+						'message' => __( 'رزرو تأیید شد، اما مشتری شماره موبایل معتبر ثبت نکرده — پیامک ارسال نشد.', 'mr-booking' ),
+					);
+				case 'sms_disabled':
+					return array(
+						'type'    => 'warning',
+						'message' => __( 'رزرو تأیید شد، اما ارسال پیامک در تنظیمات غیرفعال است.', 'mr-booking' ),
+					);
+				case 'sms_template_empty':
+					return array(
+						'type'    => 'warning',
+						'message' => __( 'رزرو تأیید شد؛ قالب پیامک تأیید خالی است.', 'mr-booking' ),
+					);
+				case 'notify_on_confirm_disabled':
+					return null;
+			}
+		}
+
+		return null;
+	}
 }

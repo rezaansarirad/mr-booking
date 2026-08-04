@@ -21,6 +21,14 @@ final class Smsir_Provider implements Provider_Interface {
 		return 'SMS.ir';
 	}
 
+	public function supports_account_credit(): bool {
+		return false;
+	}
+
+	public function test_hint(): string {
+		return __( 'کلید API و شماره خط SMS.ir را وارد کنید. تست خودکار اتصال برای این سرویس‌دهنده هنوز فعال نیست — پس از ذخیره، یک رزرو آزمایشی ثبت کنید.', 'mr-booking' );
+	}
+
 	public function send( string $to, string $message, array $config = array() ): array {
 		$api_key = (string) ( $config['sms_api_key'] ?? '' );
 		$sender  = (string) ( $config['sms_sender'] ?? '' );
@@ -62,6 +70,13 @@ final class Smsir_Provider implements Provider_Interface {
 		return array(
 			'ok'       => $code >= 200 && $code < 300,
 			'response' => $raw,
+		);
+	}
+
+	public function test_connection( array $config = array() ): array {
+		return array(
+			'ok'    => false,
+			'error' => __( 'تست اتصال برای SMS.ir هنوز پشتیبانی نمی‌شود. پس از ذخیره تنظیمات، یک رزرو آزمایشی ثبت کنید.', 'mr-booking' ),
 		);
 	}
 }

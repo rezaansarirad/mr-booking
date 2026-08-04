@@ -44,6 +44,13 @@ final class Settings_Page {
 		$settings  = Settings::get();
 		$tab       = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'general';
 		$providers = SMS_Manager::providers();
+		$sms_test_hints = array();
+		$sms_credit_support = array();
+		foreach ( $providers as $slug => $provider ) {
+			$sms_test_hints[ $slug ]       = $provider->test_hint();
+			$sms_credit_support[ $slug ]   = $provider->supports_account_credit();
+		}
+		$sms_account_credit = SMS_Manager::get_account_credit();
 
 		// Allow re-running setup wizard from settings.
 		if ( ! empty( $_GET['rerun_setup'] ) && current_user_can( \MRBooking\Helpers::manage_cap() ) ) { // phpcs:ignore
@@ -164,6 +171,11 @@ final class Settings_Page {
 		}
 
 		Settings::update( $data );
+
+		if ( 'sms' === $tab ) {
+			SMS_Manager::clear_account_credit_cache();
+			SMS_Manager::refresh_account_credit( $data );
+		}
 
 		if ( 'notifications' === $tab ) {
 			wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-notifications&saved=1' ) );

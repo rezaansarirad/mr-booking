@@ -3,7 +3,7 @@
  * Plugin Name:       MR Booking
  * Plugin URI:        https://github.com/rezaansarirad/mr-booking
  * Description:       سیستم حرفه‌ای مدیریت نوبت و رزرو — تقویم شمسی/میلادی، خدمات، پرسنل، پیامک و ایمیل.
- * Version:           1.8.5
+ * Version:           1.8.8
  * Requires at least: 5.8
  * Requires PHP:      8.0
  * Author:            Reza Ansarirad
@@ -21,7 +21,7 @@ if ( ! defined( 'ABSPATH' ) ) {
 	exit;
 }
 
-define( 'MR_BOOKING_VERSION', '1.8.5' );
+define( 'MR_BOOKING_VERSION', '1.8.8' );
 define( 'MR_BOOKING_FILE', __FILE__ );
 define( 'MR_BOOKING_PATH', plugin_dir_path( __FILE__ ) );
 define( 'MR_BOOKING_URL', plugin_dir_url( __FILE__ ) );

@@ -12,6 +12,7 @@ namespace MRBooking\Admin;
 use MRBooking\Export\Exporter;
 use MRBooking\Bookings\Booking_Repository;
 use MRBooking\Helpers;
+use MRBooking\Notifications\SMS\SMS_Manager;
 use MRBooking\Settings\Color_Presets;
 use MRBooking\Settings\Settings;
 
@@ -177,6 +178,9 @@ final class Admin {
 						'hourAndMinute'       => __( '%1$s ساعت و %2$s دقیقه', 'mr-booking' ),
 						'applyBlocksNoSource' => __( 'لطفاً ابتدا بازه زمانی (از و تا) را در حداقل یک روز وارد کنید.', 'mr-booking' ),
 						'themePreviewApplied' => __( 'پیش‌نمایش قالب در فیلدهای رنگ اعمال شد. برای ثبت نهایی «ذخیره تنظیمات» را بزنید.', 'mr-booking' ),
+						'smsTesting'          => __( 'در حال تست اتصال…', 'mr-booking' ),
+						'smsTestSuccess'      => __( 'اتصال برقرار است.', 'mr-booking' ),
+						'smsTestFailed'       => __( 'اتصال ناموفق بود.', 'mr-booking' ),
 						'newBookingTitle'     => __( 'رزرو جدید', 'mr-booking' ),
 						'newBookingBody'      => __( '%1$s — %2$s', 'mr-booking' ),
 						'newBookingReload'    => __( 'مشاهده لیست', 'mr-booking' ),
@@ -314,6 +318,30 @@ final class Admin {
 					'bookings'      => Booking_Repository::format_for_admin_notice( $new ),
 				)
 			);
+		}
+
+		if ( 'test_sms_connection' === $action ) {
+			$fields = array(
+				'sms_provider' => sanitize_text_field( wp_unslash( $_POST['sms_provider'] ?? '' ) ),
+				'sms_api_key'  => sanitize_text_field( wp_unslash( $_POST['sms_api_key'] ?? '' ) ),
+				'sms_username' => sanitize_text_field( wp_unslash( $_POST['sms_username'] ?? '' ) ),
+				'sms_password' => sanitize_text_field( wp_unslash( $_POST['sms_password'] ?? '' ) ),
+				'sms_sender'   => sanitize_text_field( wp_unslash( $_POST['sms_sender'] ?? '' ) ),
+				'sms_api_url'  => esc_url_raw( wp_unslash( $_POST['sms_api_url'] ?? '' ) ),
+			);
+			$overrides = array();
+			foreach ( $fields as $key => $value ) {
+				if ( '' !== $value ) {
+					$overrides[ $key ] = $value;
+				}
+			}
+
+			$result = SMS_Manager::test_connection( $overrides );
+			if ( ! empty( $result['ok'] ) ) {
+				wp_send_json_success( $result );
+			}
+
+			wp_send_json_error( $result );
 		}
 
 		wp_send_json_error( array( 'message' => 'Unknown action' ) );

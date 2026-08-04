@@ -43,23 +43,27 @@ $total_matched = array_sum( $status_counts );
 
 	<?php if ( is_array( $notify_feedback ?? null ) ) : ?>
 		<?php
-		$email_sent   = ! empty( $notify_feedback['email']['sent'] );
-		$email_skip   = (string) ( $notify_feedback['email']['skip_reason'] ?? '' );
-		$sms_sent     = ! empty( $notify_feedback['sms']['sent'] );
-		if ( $email_sent ) :
+		foreach ( array( 'email', 'sms' ) as $notify_channel ) {
+			$notice = \MRBooking\Helpers::notify_feedback_notice(
+				$notify_channel,
+				is_array( $notify_feedback[ $notify_channel ] ?? null ) ? $notify_feedback[ $notify_channel ] : array()
+			);
+			if ( ! $notice ) {
+				continue;
+			}
+			$notice_class = 'notice-info';
+			if ( 'success' === $notice['type'] ) {
+				$notice_class = 'notice-success';
+			} elseif ( 'warning' === $notice['type'] ) {
+				$notice_class = 'notice-warning';
+			} elseif ( 'error' === $notice['type'] ) {
+				$notice_class = 'notice-error';
+			}
 			?>
-			<div class="notice notice-success is-dismissible"><p><?php esc_html_e( 'ایمیل تأیید برای مشتری ارسال شد.', 'mr-booking' ); ?></p></div>
-		<?php elseif ( 'customer_email_missing' === $email_skip ) : ?>
-			<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد، اما مشتری ایمیل ثبت نکرده — ایمیل تأیید ارسال نشد.', 'mr-booking' ); ?></p></div>
-		<?php elseif ( 'email_disabled' === $email_skip ) : ?>
-			<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد، اما ارسال ایمیل در تنظیمات غیرفعال است.', 'mr-booking' ); ?></p></div>
-		<?php elseif ( 'notify_on_confirm_disabled' === $email_skip ) : ?>
-			<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد، اما «ارسال اعلان تأیید به مشتری» در بخش اعلان‌ها خاموش است.', 'mr-booking' ); ?></p></div>
-		<?php elseif ( 'wp_mail_failed' === $email_skip ) : ?>
-			<div class="notice notice-error is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد، اما ارسال ایمیل ناموفق بود. تنظیمات SMTP/ایمیل سرور را بررسی کنید.', 'mr-booking' ); ?></p></div>
-		<?php elseif ( ! $sms_sent && in_array( $email_skip, array( 'email_template_empty', '' ), true ) && empty( $notify_feedback['email']['attempted'] ) ) : ?>
-			<div class="notice notice-warning is-dismissible"><p><?php esc_html_e( 'رزرو تأیید شد؛ اعلان ایمیل به مشتری ارسال نشد.', 'mr-booking' ); ?></p></div>
-		<?php endif; ?>
+			<div class="notice <?php echo esc_attr( $notice_class ); ?> is-dismissible"><p><?php echo esc_html( $notice['message'] ); ?></p></div>
+			<?php
+		}
+		?>
 	<?php endif; ?>
 
 	<?php if ( ! empty( $_GET['rejected'] ) ) : // phpcs:ignore ?>

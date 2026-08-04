@@ -21,6 +21,14 @@ final class Melipayamak_Provider implements Provider_Interface {
 		return 'ملی‌پیامک';
 	}
 
+	public function supports_account_credit(): bool {
+		return false;
+	}
+
+	public function test_hint(): string {
+		return __( 'نام کاربری، رمز عبور و شماره فرستنده ملی‌پیامک را وارد کنید. تست خودکار اتصال برای این سرویس‌دهنده هنوز فعال نیست — پس از ذخیره، یک رزرو آزمایشی ثبت کنید.', 'mr-booking' );
+	}
+
 	public function send( string $to, string $message, array $config = array() ): array {
 		$username = (string) ( $config['sms_username'] ?? '' );
 		$password = (string) ( $config['sms_password'] ?? '' );
@@ -60,6 +68,13 @@ final class Melipayamak_Provider implements Provider_Interface {
 		return array(
 			'ok'       => $code >= 200 && $code < 300,
 			'response' => $raw,
+		);
+	}
+
+	public function test_connection( array $config = array() ): array {
+		return array(
+			'ok'    => false,
+			'error' => __( 'تست اتصال برای ملی‌پیامک هنوز پشتیبانی نمی‌شود. پس از ذخیره تنظیمات، یک رزرو آزمایشی ثبت کنید.', 'mr-booking' ),
 		);
 	}
 }

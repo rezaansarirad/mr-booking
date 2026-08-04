@@ -10,6 +10,7 @@ declare(strict_types=1);
 namespace MRBooking;
 
 use MRBooking\Admin\Admin;
+use MRBooking\Admin\Admin_Bar;
 use MRBooking\API\Rest_Controller;
 use MRBooking\Elementor\Bootstrap as Elementor_Bootstrap;
 use MRBooking\Frontend\Assets as Frontend_Assets;
@@ -34,6 +35,8 @@ final class Plugin {
 
 	public function boot(): void {
 		Settings::init();
+
+		( new Admin_Bar() )->hooks();
 
 		if ( is_admin() ) {
 			( new Admin() )->hooks();

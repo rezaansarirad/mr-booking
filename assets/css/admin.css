@@ -4827,3 +4827,144 @@ body.mrb-hide-branding .mrb-setup__eyebrow {
     max-width: none;
   }
 }
+
+.mrb-sms-test {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.mrb-sms-connect-section {
+  padding-top: 8px;
+}
+
+.mrb-sms-connect {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  gap: 16px;
+  padding: 18px;
+  border-radius: 14px;
+  border: 1px solid #dbeafe;
+  background: linear-gradient(135deg, #f8fbff 0%, #f0fdf9 100%);
+  box-shadow: 0 8px 24px rgba(15, 118, 110, 0.06);
+}
+
+.mrb-sms-connect__icon-wrap {
+  width: 52px;
+  height: 52px;
+  border-radius: 14px;
+  display: grid;
+  place-items: center;
+  background: #0f766e;
+  color: #fff;
+  box-shadow: 0 8px 18px rgba(15, 118, 110, 0.28);
+}
+
+.mrb-sms-connect__icon-wrap .dashicons {
+  width: 28px;
+  height: 28px;
+  font-size: 28px;
+}
+
+.mrb-sms-connect__head h3 {
+  margin: 0 0 6px;
+  font-size: 1rem;
+  color: #0f172a;
+}
+
+.mrb-sms-connect__hint {
+  margin: 0;
+  color: #64748b;
+  font-size: 0.88rem;
+  line-height: 1.7;
+}
+
+.mrb-sms-connect__credit {
+  display: inline-flex;
+  align-items: baseline;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 14px;
+  padding: 10px 14px;
+  border-radius: 10px;
+  background: #fff;
+  border: 1px solid #bbf7d0;
+}
+
+.mrb-sms-connect__credit-label {
+  font-size: 0.82rem;
+  color: #64748b;
+}
+
+.mrb-sms-connect__credit strong {
+  font-size: 1.35rem;
+  color: #047857;
+  letter-spacing: 0.01em;
+}
+
+.mrb-sms-connect__credit strong small {
+  font-size: 0.72rem;
+  font-weight: 600;
+  color: #059669;
+}
+
+.mrb-sms-connect__actions {
+  margin-top: 14px;
+}
+
+.mrb-sms-connect__actions .button {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  min-height: 36px;
+}
+
+.mrb-sms-connect__actions .dashicons {
+  width: 16px;
+  height: 16px;
+  font-size: 16px;
+}
+
+.mrb-sms-test__result {
+  margin: 12px 0 0;
+  padding: 10px 12px;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  line-height: 1.6;
+  width: 100%;
+  box-sizing: border-box;
+}
+
+.mrb-sms-test__result.is-success {
+  background: #ecfdf5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+}
+
+.mrb-sms-test__result.is-error {
+  background: #fef2f2;
+  color: #991b1b;
+  border: 1px solid #fecaca;
+}
+
+.mrb-sms-connect__actions .button.is-busy .dashicons {
+  animation: mrb-spin 0.8s linear infinite;
+}
+
+@keyframes mrb-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@media (max-width: 600px) {
+  .mrb-sms-connect {
+    grid-template-columns: 1fr;
+  }
+
+  .mrb-sms-connect__icon-wrap {
+    width: 44px;
+    height: 44px;
+  }
+}

@@ -628,4 +628,104 @@
       serviceEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
     });
   }
+
+  $(document).on('click', '#mrb-test-sms-connection', function () {
+    var cfg = window.mrBookingAdmin || {};
+    var i18n = cfg.i18n || {};
+    var $btn = $(this);
+    var $result = $('#mrb-sms-test-result');
+    var $form = $btn.closest('form');
+    var $creditBadge = $('#mrb-sms-credit-badge');
+    var $creditValue = $('#mrb-sms-credit-value');
+
+    if (!$form.length) {
+      return;
+    }
+
+    $btn.prop('disabled', true).addClass('is-busy');
+    $result.removeClass('is-success is-error').attr('hidden', false).text(i18n.smsTesting || 'در حال تست اتصال…');
+
+    $.post(cfg.ajaxUrl, {
+      action: 'mr_booking_admin',
+      nonce: cfg.nonce,
+      mr_action: 'test_sms_connection',
+      sms_provider: $form.find('[name="settings[sms_provider]"]').val() || '',
+      sms_api_key: $form.find('[name="settings[sms_api_key]"]').val() || '',
+      sms_username: $form.find('[name="settings[sms_username]"]').val() || '',
+      sms_password: $form.find('[name="settings[sms_password]"]').val() || '',
+      sms_sender: $form.find('[name="settings[sms_sender]"]').val() || '',
+      sms_api_url: $form.find('[name="settings[sms_api_url]"]').val() || ''
+    })
+      .done(function (res) {
+        if (res && res.success && res.data) {
+          var msg = res.data.message || i18n.smsTestSuccess || 'اتصال برقرار است.';
+          $result.addClass('is-success').text(msg);
+
+          if (res.data.account && typeof res.data.account.credit === 'number') {
+            var creditText = toFa(String(Math.round(res.data.account.credit)).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+            $creditBadge.removeAttr('hidden').removeAttr('data-empty');
+            $creditBadge.attr('data-provider', $form.find('[name="settings[sms_provider]"]').val() || '');
+            $creditValue.html(creditText + ' <small>ریال</small>');
+          }
+          return;
+        }
+
+        var err =
+          (res && res.data && (res.data.error || res.data.message)) ||
+          i18n.smsTestFailed ||
+          'اتصال ناموفق بود.';
+        $result.addClass('is-error').text(err);
+      })
+      .fail(function (xhr) {
+        var err =
+          (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.error) ||
+          i18n.error ||
+          'خطا رخ داد.';
+        $result.addClass('is-error').text(err);
+      })
+      .always(function () {
+        $btn.prop('disabled', false).removeClass('is-busy');
+      });
+  });
+
+  function syncSmsProviderUi() {
+    var hintsEl = document.getElementById('mrb-sms-test-hints');
+    var supportEl = document.getElementById('mrb-sms-credit-support');
+    var hintEl = document.getElementById('mrb-sms-test-hint');
+    var creditBadge = document.getElementById('mrb-sms-credit-badge');
+    var providerSelect = document.querySelector('[name="settings[sms_provider]"]');
+
+    if (!hintsEl || !hintEl || !providerSelect) {
+      return;
+    }
+
+    var hints = {};
+    var support = {};
+    try {
+      hints = JSON.parse(hintsEl.textContent || '{}');
+      support = supportEl ? JSON.parse(supportEl.textContent || '{}') : {};
+    } catch (e) {
+      hints = {};
+      support = {};
+    }
+
+    var provider = providerSelect.value || 'kavenegar';
+    hintEl.textContent = hints[provider] || '';
+
+    if (creditBadge) {
+      if (support[provider]) {
+        creditBadge.removeAttribute('hidden');
+        var creditValue = document.getElementById('mrb-sms-credit-value');
+        if (creditValue && creditBadge.getAttribute('data-provider') !== provider) {
+          creditValue.textContent = '—';
+          creditBadge.setAttribute('data-empty', '1');
+        }
+      } else {
+        creditBadge.setAttribute('hidden', 'hidden');
+      }
+    }
+  }
+
+  $(document).on('change', '[name="settings[sms_provider]"]', syncSmsProviderUi);
+  syncSmsProviderUi();
 })(jQuery);

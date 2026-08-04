@@ -8,6 +8,7 @@
 defined( 'ABSPATH' ) || exit;
 
 use MRBooking\Helpers;
+use MRBooking\Notifications\SMS\SMS_Manager;
 
 $tabs = array(
 	'general'    => array(
@@ -770,6 +771,59 @@ $color_groups = array(
 									<span class="mrb-field__hint"><?php esc_html_e( 'هر خط یا با ویرگول جدا کنید. برای مدیر یا پرسنل‌هایی که باید از رزرو جدید باخبر شوند.', 'mr-booking' ); ?></span>
 								</label>
 							</div>
+						</section>
+						<section class="mrb-settings__section mrb-sms-connect-section">
+							<?php
+							$current_provider   = (string) ( $settings['sms_provider'] ?? 'kavenegar' );
+							$current_hint       = (string) ( $sms_test_hints[ $current_provider ] ?? '' );
+							$show_credit_badge  = ! empty( $sms_credit_support[ $current_provider ] );
+							$cached_credit_val  = (
+								! empty( $sms_account_credit['ok'] )
+								&& (string) ( $sms_account_credit['provider'] ?? '' ) === $current_provider
+								&& isset( $sms_account_credit['credit'] )
+							)
+								? (float) $sms_account_credit['credit']
+								: null;
+							?>
+							<div class="mrb-sms-connect">
+								<div class="mrb-sms-connect__icon-wrap" aria-hidden="true">
+									<span class="dashicons dashicons-smartphone"></span>
+								</div>
+								<div class="mrb-sms-connect__body">
+									<div class="mrb-sms-connect__head">
+										<h3><?php esc_html_e( 'اتصال و اعتبار پیامک', 'mr-booking' ); ?></h3>
+										<p class="mrb-sms-connect__hint" id="mrb-sms-test-hint"><?php echo esc_html( $current_hint ); ?></p>
+									</div>
+									<div
+										class="mrb-sms-connect__credit"
+										id="mrb-sms-credit-badge"
+										data-provider="<?php echo esc_attr( $current_provider ); ?>"
+										<?php echo $show_credit_badge ? '' : 'hidden'; ?>
+										<?php echo null === $cached_credit_val ? 'data-empty="1"' : ''; ?>
+									>
+										<span class="mrb-sms-connect__credit-label"><?php esc_html_e( 'اعتبار فعلی', 'mr-booking' ); ?></span>
+										<strong id="mrb-sms-credit-value">
+											<?php
+											if ( null !== $cached_credit_val ) {
+												echo esc_html( SMS_Manager::format_credit( $cached_credit_val ) );
+												echo ' <small>' . esc_html__( 'ریال', 'mr-booking' ) . '</small>';
+											} else {
+												esc_html_e( '—', 'mr-booking' );
+											}
+											?>
+										</strong>
+									</div>
+									<div class="mrb-sms-connect__actions">
+										<button type="button" class="button button-secondary" id="mrb-test-sms-connection">
+											<span class="dashicons dashicons-update" aria-hidden="true"></span>
+											<?php esc_html_e( 'تست اتصال', 'mr-booking' ); ?>
+										</button>
+									</div>
+									<div id="mrb-sms-test-result" class="mrb-sms-test__result" aria-live="polite" hidden></div>
+								</div>
+							</div>
+							<script type="application/json" id="mrb-sms-test-hints"><?php echo wp_json_encode( $sms_test_hints, JSON_UNESCAPED_UNICODE ); ?></script>
+							<script type="application/json" id="mrb-sms-credit-support"><?php echo wp_json_encode( $sms_credit_support ); ?></script>
 						</section>
 
 					<?php elseif ( 'email' === $tab ) : ?>

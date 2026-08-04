@@ -16,6 +16,8 @@ defined( 'ABSPATH' ) || exit;
 
 final class SMS_Manager {
 
+	private const CREDIT_TTL = 900;
+
 	/**
 	 * @return array<string, Provider_Interface>
 	 */
@@ -64,5 +66,133 @@ final class SMS_Manager {
 		do_action( 'mr_booking_sms_sent', $to, $message, $result );
 
 		return $result;
+	}
+
+	/**
+	 * @param array<string, mixed> $overrides Optional settings overrides (e.g. unsaved form values).
+	 * @return array{ok:bool,message?:string,error?:string,account?:array<string,mixed>,response?:string}
+	 */
+	public static function test_connection( array $overrides = array() ): array {
+		$settings = array_merge( Settings::get(), $overrides );
+		$slug     = (string) ( $settings['sms_provider'] ?? 'kavenegar' );
+		$provider = self::providers()[ $slug ] ?? null;
+
+		if ( ! $provider ) {
+			return array( 'ok' => false, 'error' => __( 'سرویس‌دهنده پیامک نامعتبر است.', 'mr-booking' ) );
+		}
+
+		$result = $provider->test_connection( $settings );
+		if ( ! empty( $result['ok'] ) ) {
+			self::store_account_credit_from_test( $slug, $provider, $result );
+		}
+
+		return $result;
+	}
+
+	/**
+	 * Cached account credit for admin bar / settings UI.
+	 *
+	 * @return array{ok:bool,provider?:string,provider_label?:string,credit?:float|null,error?:string|null,checked_at?:int,reason?:string}
+	 */
+	public static function get_account_credit( bool $force_refresh = false ): array {
+		$settings = Settings::get();
+		if ( empty( $settings['sms_enabled'] ) ) {
+			return array( 'ok' => false, 'reason' => 'disabled' );
+		}
+
+		$slug     = (string) ( $settings['sms_provider'] ?? 'kavenegar' );
+		$provider = self::providers()[ $slug ] ?? null;
+		if ( ! $provider || ! $provider->supports_account_credit() ) {
+			return array( 'ok' => false, 'reason' => 'unsupported', 'provider' => $slug );
+		}
+
+		if ( ! $force_refresh ) {
+			$cached = get_transient( self::credit_transient_key( $slug ) );
+			if ( is_array( $cached ) ) {
+				return $cached;
+			}
+		}
+
+		return self::refresh_account_credit();
+	}
+
+	/**
+	 * @return array{ok:bool,provider?:string,provider_label?:string,credit?:float|null,error?:string|null,checked_at?:int,reason?:string}
+	 */
+	public static function refresh_account_credit( array $overrides = array() ): array {
+		$settings = array_merge( Settings::get(), $overrides );
+		$slug     = (string) ( $settings['sms_provider'] ?? 'kavenegar' );
+		$provider = self::providers()[ $slug ] ?? null;
+
+		if ( ! $provider || ! $provider->supports_account_credit() ) {
+			self::clear_account_credit_cache( $slug );
+
+			return array( 'ok' => false, 'reason' => 'unsupported', 'provider' => $slug );
+		}
+
+		$result  = $provider->test_connection( $settings );
+		$payload = self::build_credit_payload( $slug, $provider, $result );
+
+		if ( ! empty( $payload['ok'] ) ) {
+			set_transient( self::credit_transient_key( $slug ), $payload, self::CREDIT_TTL );
+		} else {
+			delete_transient( self::credit_transient_key( $slug ) );
+		}
+
+		return $payload;
+	}
+
+	public static function clear_account_credit_cache( ?string $slug = null ): void {
+		if ( null !== $slug && '' !== $slug ) {
+			delete_transient( self::credit_transient_key( $slug ) );
+			return;
+		}
+
+		foreach ( array_keys( self::providers() ) as $provider_slug ) {
+			delete_transient( self::credit_transient_key( $provider_slug ) );
+		}
+	}
+
+	public static function format_credit( ?float $credit ): string {
+		if ( null === $credit ) {
+			return '—';
+		}
+
+		return number_format_i18n( $credit, 0 );
+	}
+
+	private static function credit_transient_key( string $slug ): string {
+		return 'mr_booking_sms_credit_' . sanitize_key( $slug );
+	}
+
+	/**
+	 * @param array<string, mixed> $result
+	 */
+	private static function store_account_credit_from_test( string $slug, Provider_Interface $provider, array $result ): void {
+		if ( ! $provider->supports_account_credit() ) {
+			return;
+		}
+
+		$payload = self::build_credit_payload( $slug, $provider, $result );
+		if ( ! empty( $payload['ok'] ) ) {
+			set_transient( self::credit_transient_key( $slug ), $payload, self::CREDIT_TTL );
+		}
+	}
+
+	/**
+	 * @param array<string, mixed> $result
+	 * @return array{ok:bool,provider:string,provider_label:string,credit:float|null,error:string|null,checked_at:int}
+	 */
+	private static function build_credit_payload( string $slug, Provider_Interface $provider, array $result ): array {
+		$credit = isset( $result['account']['credit'] ) ? (float) $result['account']['credit'] : null;
+
+		return array(
+			'ok'             => ! empty( $result['ok'] ),
+			'provider'       => $slug,
+			'provider_label' => $provider->label(),
+			'credit'         => $credit,
+			'error'          => empty( $result['ok'] ) ? (string) ( $result['error'] ?? '' ) : null,
+			'checked_at'     => time(),
+		);
 	}
 }
