@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
 final class Working_Hours {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-hours' );
 		$settings   = Settings::get();
 		$hours_mode = (string) ( $settings['hours_mode'] ?? 'global' );
 		$staff_list = Staff_Repository::all( 'active' );
@@ -39,9 +40,7 @@ final class Working_Hours {
 	}
 
 	public static function save(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::HOURS );
 		check_admin_referer( 'mr_booking_save_hours' );
 
 		$settings   = Settings::get();

@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
 final class Customers {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-customers' );
 		$search = isset( $_GET['s'] ) ? sanitize_text_field( wp_unslash( $_GET['s'] ) ) : '';
 		$args   = array(
 			'search' => $search,
@@ -49,9 +50,7 @@ final class Customers {
 	}
 
 	public static function send_message(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::CUSTOMERS );
 		check_admin_referer( 'mr_booking_send_message' );
 
 		$id      = absint( $_POST['customer_id'] ?? 0 );
@@ -66,9 +65,7 @@ final class Customers {
 	}
 
 	public static function save(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::CUSTOMERS );
 		check_admin_referer( 'mr_booking_save_customer' );
 
 		$id = absint( $_POST['id'] ?? 0 );

@@ -17,6 +17,7 @@ defined( 'ABSPATH' ) || exit;
 final class Services {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-services' );
 		$services = Service_Repository::all();
 		$edit_id  = isset( $_GET['edit'] ) ? absint( $_GET['edit'] ) : 0;
 		$creating = ! empty( $_GET['new'] ) && 0 === $edit_id; // phpcs:ignore
@@ -28,9 +29,7 @@ final class Services {
 	}
 
 	public static function save(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::SERVICES );
 		check_admin_referer( 'mr_booking_save_service' );
 
 		$id       = absint( $_POST['id'] ?? 0 );
@@ -57,9 +56,7 @@ final class Services {
 	}
 
 	public static function delete(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::SERVICES );
 		check_admin_referer( 'mr_booking_delete_service' );
 		Service_Repository::delete( absint( $_POST['id'] ?? 0 ) );
 		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-services&deleted=1' ) );
@@ -67,9 +64,7 @@ final class Services {
 	}
 
 	public static function quick_toggle(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::SERVICES );
 		check_admin_referer( 'mr_booking_service_toggle' );
 
 		$id   = absint( $_POST['id'] ?? 0 );

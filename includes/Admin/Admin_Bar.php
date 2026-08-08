@@ -11,6 +11,7 @@ namespace MRBooking\Admin;
 
 use MRBooking\Helpers;
 use MRBooking\Notifications\SMS\SMS_Manager;
+use MRBooking\Roles\Capabilities;
 use MRBooking\Settings\Settings;
 
 defined( 'ABSPATH' ) || exit;
@@ -24,7 +25,7 @@ final class Admin_Bar {
 	}
 
 	public function register_node( \WP_Admin_Bar $wp_admin_bar ): void {
-		if ( ! is_user_logged_in() || ! current_user_can( Helpers::manage_cap() ) ) {
+		if ( ! is_user_logged_in() || ! Helpers::user_can( Capabilities::SETTINGS ) ) {
 			return;
 		}
 
@@ -76,7 +77,7 @@ final class Admin_Bar {
 	}
 
 	public function styles(): void {
-		if ( ! is_user_logged_in() || ! is_admin_bar_showing() || ! current_user_can( Helpers::manage_cap() ) ) {
+		if ( ! is_user_logged_in() || ! is_admin_bar_showing() || ! Helpers::user_can( Capabilities::SETTINGS ) ) {
 			return;
 		}
 

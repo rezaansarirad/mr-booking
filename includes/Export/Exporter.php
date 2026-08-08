@@ -19,7 +19,7 @@ final class Exporter {
 	 * @param array<string, mixed> $args
 	 */
 	public static function customers_csv( array $args = array() ): void {
-		if ( ! current_user_can( \MRBooking\Helpers::manage_cap() ) ) {
+		if ( ! \MRBooking\Helpers::user_can( \MRBooking\Roles\Capabilities::REPORTS ) ) {
 			wp_die( esc_html__( 'دسترسی غیرمجاز', 'mr-booking' ) );
 		}
 
@@ -64,7 +64,7 @@ final class Exporter {
 	 * @param array<string, mixed> $args
 	 */
 	public static function bookings_csv( array $args = array() ): void {
-		if ( ! current_user_can( \MRBooking\Helpers::manage_cap() ) ) {
+		if ( ! \MRBooking\Helpers::user_can( \MRBooking\Roles\Capabilities::REPORTS ) ) {
 			wp_die( esc_html__( 'دسترسی غیرمجاز', 'mr-booking' ) );
 		}
 

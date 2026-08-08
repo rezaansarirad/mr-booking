@@ -18,6 +18,7 @@ defined( 'ABSPATH' ) || exit;
 final class Calendar_View {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-calendar' );
 		$view  = isset( $_GET['view'] ) ? sanitize_text_field( wp_unslash( $_GET['view'] ) ) : 'month';
 		$date  = isset( $_GET['date'] ) ? sanitize_text_field( wp_unslash( $_GET['date'] ) ) : current_time( 'Y-m-d' );
 

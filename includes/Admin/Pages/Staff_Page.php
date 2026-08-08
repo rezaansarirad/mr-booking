@@ -21,6 +21,7 @@ defined( 'ABSPATH' ) || exit;
 final class Staff_Page {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-staff' );
 		$settings   = Settings::get();
 		$hours_mode = (string) ( $settings['hours_mode'] ?? 'global' );
 		$staff_list = Staff_Repository::all();
@@ -50,9 +51,7 @@ final class Staff_Page {
 	}
 
 	public static function save(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::STAFF );
 		check_admin_referer( 'mr_booking_save_staff' );
 
 		$settings   = Settings::get();
@@ -96,9 +95,7 @@ final class Staff_Page {
 	}
 
 	public static function delete(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::STAFF );
 		check_admin_referer( 'mr_booking_delete_staff' );
 		Staff_Repository::delete( absint( $_POST['id'] ?? 0 ) );
 		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-staff&deleted=1' ) );

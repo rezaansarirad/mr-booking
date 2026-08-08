@@ -47,7 +47,7 @@ final class Setup_Wizard {
 			'mr-booking',
 			__( 'راه‌اندازی اولیه', 'mr-booking' ),
 			__( 'راه‌اندازی اولیه', 'mr-booking' ),
-			Helpers::manage_cap(),
+			\MRBooking\Roles\Capabilities::SETTINGS,
 			'mr-booking-setup',
 			array( $this, 'render' )
 		);
@@ -59,7 +59,7 @@ final class Setup_Wizard {
 	}
 
 	public function maybe_redirect(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) || self::is_complete() ) {
+		if ( ! Helpers::user_can( \MRBooking\Roles\Capabilities::SETTINGS ) || self::is_complete() ) {
 			return;
 		}
 
@@ -84,7 +84,7 @@ final class Setup_Wizard {
 	}
 
 	public function notice(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) || self::is_complete() ) {
+		if ( ! Helpers::user_can( \MRBooking\Roles\Capabilities::SETTINGS ) || self::is_complete() ) {
 			return;
 		}
 
@@ -128,9 +128,7 @@ final class Setup_Wizard {
 	}
 
 	public function render(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( esc_html__( 'دسترسی غیرمجاز', 'mr-booking' ) );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::SETTINGS );
 
 		$step     = max( 1, min( 6, absint( $_GET['step'] ?? 1 ) ) ); // phpcs:ignore
 		$settings = Settings::get();
@@ -155,9 +153,7 @@ final class Setup_Wizard {
 	}
 
 	public function skip(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::SETTINGS );
 		check_admin_referer( 'mr_booking_setup_skip' );
 		update_option( self::OPTION_COMPLETE, 1 );
 		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking&setup=skipped' ) );
@@ -165,9 +161,7 @@ final class Setup_Wizard {
 	}
 
 	public function save_step(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::SETTINGS );
 		check_admin_referer( 'mr_booking_setup_wizard' );
 
 		$step = absint( $_POST['step'] ?? 1 );

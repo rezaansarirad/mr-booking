@@ -8,7 +8,7 @@
 
 Professional appointment and booking management for WordPress — Jalali/Gregorian calendar, services, staff, working hours, holidays, SMS, and email notifications.
 
-**Version:** 1.8.3  
+**Version:** 1.9.3  
 **Author:** Reza Ansarirad  
 **Requirements:** WordPress 5.8+ · PHP 8.0+
 
@@ -188,7 +188,24 @@ If a customer did not receive a confirmation email, check:
 3. The customer has an email on file (email is optional unless **Require email** is on)
 4. Server mail / SMTP is working (use a plugin like WP Mail SMTP if needed)
 
-After approving a booking, the admin notice explains exactly what happened.
+After approving a booking, the admin notice explains exactly what happened (email and SMS separately).
+
+---
+
+## User roles & access
+
+MR Booking registers WordPress roles for staff who only manage bookings — without full site admin access.
+
+| Role | Access |
+| ---- | ------ |
+| **Receptionist** (`mr_booking_receptionist`) | Appointments, phone booking, customers, calendar |
+| **Booking manager** (`mr_booking_manager`) | All plugin sections including **Settings** |
+
+Create users under **Users → Add New** and assign a role. Booking-only users see only the MR Booking menu; other WordPress admin menus are hidden. After login they land on their first allowed section.
+
+Fine-grained capabilities (`mr_booking_*`) can be customized with plugins like **User Role Editor**.
+
+See **Settings → Access** in the admin panel for a quick guide.
 
 ---
 
@@ -196,10 +213,12 @@ After approving a booking, the admin notice explains exactly what happened.
 
 While you are on any MR Booking admin page:
 
-- New bookings are detected automatically (polling every 30 seconds)
+- New bookings are detected automatically (configurable poll interval)
 - A toast notification appears with customer and service info
 - An optional sound plays (can be muted for the session)
 - Click through to the appointments list
+
+Adjust the poll interval under **Settings → Dashboard** (0 = off, 15–300 seconds).
 
 ---
 
@@ -241,7 +260,7 @@ The MR Booking dashboard shows today’s bookings and recent registrations sorte
 - Holidays and special dates
 - Notifications (SMS/email templates, confirm toggle)
 - Reports
-- Settings (general, calendar, rules, appearance, texts, SMS, email)
+- Settings (general, calendar, rules, appearance, texts, SMS, email, **access**)
 
 ---
 
@@ -261,9 +280,11 @@ Dates are stored in the database as Gregorian and converted only for display.
 
 Built-in provider abstraction for:
 
-- Kavenegar
+- **Kavenegar** — connection test, account credit in settings, credit balance in the WordPress admin bar
 - Melipayamak
 - SMS.ir
+
+In **Settings → SMS**, use **Test connection** to verify the API key (Kavenegar shows account balance). Credit is cached and shown in the admin toolbar.
 
 Add a custom provider with a filter:
 
@@ -334,7 +355,30 @@ The plugin integrates with WordPress personal data export and erasure tools.
 
 ---
 
+## Development & release zip
+
+The plugin repo includes `.git/` for development. **Do not upload the git folder to WordPress** — updates will fail.
+
+Build a clean zip (no `.git`, no `.DS_Store`):
+
+```bash
+cd plugin
+rsync -a --exclude='.git' --exclude='.DS_Store' --exclude='__MACOSX' --exclude='*.zip' \
+  mr-booking/ /tmp/mr-booking-release/mr-booking/
+cd /tmp/mr-booking-release && zip -r mr-booking.zip mr-booking
+```
+
+See `.distignore` for files excluded from distribution.
+
+---
+
 ## Changelog (recent)
+
+### 1.9.x
+- **1.9.3** — Booking manager role includes **Settings** menu access
+- **1.9.2** — Fix duplicate import fatal error in restricted admin
+- **1.9.1** — Fix missing `DASHBOARD` capability constant on activation
+- **1.9.0** — WordPress user roles (Receptionist, Booking manager); per-section capabilities; trimmed admin for booking staff; SMS connection test & Kavenegar credit in admin bar; separate email/SMS feedback after approve
 
 ### 1.8.x
 - **1.8.3** — Admin menu and Elementor category/widget title follow site locale (**Booking Form** / **رزروها**)

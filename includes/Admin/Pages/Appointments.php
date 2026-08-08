@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
 final class Appointments {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-appointments' );
 		$now       = new \DateTimeImmutable( 'now', wp_timezone() );
 		$today     = $now->format( 'Y-m-d' );
 		$tomorrow  = $now->modify( '+1 day' )->format( 'Y-m-d' );
@@ -170,9 +171,7 @@ final class Appointments {
 	}
 
 	public static function update_status(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::APPOINTMENTS );
 		check_admin_referer( 'mr_booking_update_status' );
 
 		$id       = absint( $_POST['booking_id'] ?? 0 );
@@ -209,9 +208,7 @@ final class Appointments {
 	}
 
 	public static function cancel_booking(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::APPOINTMENTS );
 		check_admin_referer( 'mr_booking_cancel_booking' );
 
 		$id       = absint( $_POST['booking_id'] ?? 0 );
@@ -232,9 +229,7 @@ final class Appointments {
 	}
 
 	public static function delete_booking(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::APPOINTMENTS );
 		check_admin_referer( 'mr_booking_delete_booking' );
 
 		$id      = absint( $_POST['booking_id'] ?? 0 );

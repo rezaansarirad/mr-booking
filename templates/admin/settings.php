@@ -9,6 +9,8 @@ defined( 'ABSPATH' ) || exit;
 
 use MRBooking\Helpers;
 use MRBooking\Notifications\SMS\SMS_Manager;
+use MRBooking\Roles\Capabilities;
+use MRBooking\Roles\Roles;
 
 $tabs = array(
 	'general'    => array(
@@ -55,6 +57,11 @@ $tabs = array(
 		'label' => __( 'پریمیوم', 'mr-booking' ),
 		'desc'  => __( 'فعال‌سازی امکانات ویژه و وایت‌لیبل', 'mr-booking' ),
 		'icon'  => 'dashicons-star-filled',
+	),
+	'access'     => array(
+		'label' => __( 'دسترسی', 'mr-booking' ),
+		'desc'  => __( 'نقش‌های کاربری و سطح دسترسی پرسنل', 'mr-booking' ),
+		'icon'  => 'dashicons-groups',
 	),
 	'github'     => array(
 		'label' => __( 'گیت‌هاب', 'mr-booking' ),
@@ -919,6 +926,39 @@ $color_groups = array(
 									</span>
 								</label>
 							</div>
+						</section>
+					<?php elseif ( 'access' === $tab ) : ?>
+						<section class="mrb-settings__section">
+							<h3><?php esc_html_e( 'نقش‌های آماده', 'mr-booking' ); ?></h3>
+							<p class="mrb-settings__hint"><?php esc_html_e( 'کاربران را از منوی «کاربران → افزودن» بسازید و یکی از نقش‌های زیر را انتخاب کنید. این نقش‌ها فقط برای مدیریت رزرو طراحی شده‌اند و بقیه منوی وردپرس را نمی‌بینند.', 'mr-booking' ); ?></p>
+							<div class="mrb-access-roles">
+								<?php foreach ( Roles::definitions() as $role_slug => $role ) : ?>
+									<article class="mrb-access-role">
+										<h4><?php echo esc_html( $role['label'] ); ?></h4>
+										<p><?php echo esc_html( $role['desc'] ); ?></p>
+										<ul>
+											<?php foreach ( $role['caps'] as $cap ) : ?>
+												<?php $section = Capabilities::sections()[ $cap ] ?? null; ?>
+												<li><?php echo esc_html( $section['label'] ?? $cap ); ?></li>
+											<?php endforeach; ?>
+										</ul>
+										<p class="description"><code><?php echo esc_html( $role_slug ); ?></code></p>
+									</article>
+								<?php endforeach; ?>
+							</div>
+						</section>
+						<section class="mrb-settings__section">
+							<h3><?php esc_html_e( 'راهنمای سریع', 'mr-booking' ); ?></h3>
+							<ol class="mrb-access-steps">
+								<li><?php esc_html_e( 'کاربران → افزودن — نام کاربری و رمز بسازید.', 'mr-booking' ); ?></li>
+								<li><?php esc_html_e( 'نقش «منشی رزرو» را برای پذیرش تلفنی انتخاب کنید (نوبت‌ها + رزرو تلفنی).', 'mr-booking' ); ?></li>
+								<li><?php esc_html_e( 'پس از ورود، فقط منوی رزروها نمایش داده می‌شود و به اولین بخش مجاز هدایت می‌شود.', 'mr-booking' ); ?></li>
+								<li><?php esc_html_e( 'برای دسترسی سفارشی از افزونه‌هایی مثل User Role Editor استفاده کنید.', 'mr-booking' ); ?></li>
+							</ol>
+							<p class="description">
+								<a href="<?php echo esc_url( admin_url( 'user-new.php' ) ); ?>" class="button button-secondary"><?php esc_html_e( 'افزودن کاربر جدید', 'mr-booking' ); ?></a>
+								<a href="<?php echo esc_url( admin_url( 'users.php' ) ); ?>" class="button button-link"><?php esc_html_e( 'مدیریت کاربران', 'mr-booking' ); ?></a>
+							</p>
 						</section>
 					<?php elseif ( 'github' === $tab ) : ?>
 						<section class="mrb-settings__section mrb-settings__section--github">

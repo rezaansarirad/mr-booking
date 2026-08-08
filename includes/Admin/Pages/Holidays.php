@@ -18,6 +18,7 @@ defined( 'ABSPATH' ) || exit;
 final class Holidays {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-holidays' );
 		$holidays = Holiday_Repository::all();
 		$specials = Hours_Repository::all_special_dates();
 
@@ -25,9 +26,7 @@ final class Holidays {
 	}
 
 	public static function save(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::HOLIDAYS );
 		check_admin_referer( 'mr_booking_save_holiday' );
 
 		Holiday_Repository::save(
@@ -45,9 +44,7 @@ final class Holidays {
 	}
 
 	public static function delete(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::HOLIDAYS );
 		check_admin_referer( 'mr_booking_delete_holiday' );
 		Holiday_Repository::delete( absint( $_POST['id'] ?? 0 ) );
 		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-holidays&deleted=1' ) );
@@ -55,9 +52,7 @@ final class Holidays {
 	}
 
 	public static function save_special(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::HOLIDAYS );
 		check_admin_referer( 'mr_booking_save_special' );
 
 		$type    = sanitize_text_field( wp_unslash( $_POST['type'] ?? 'closed' ) );
@@ -92,9 +87,7 @@ final class Holidays {
 	}
 
 	public static function delete_special(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::HOLIDAYS );
 		check_admin_referer( 'mr_booking_delete_special' );
 		Hours_Repository::delete_special_date( absint( $_POST['id'] ?? 0 ) );
 		wp_safe_redirect( admin_url( 'admin.php?page=mr-booking-holidays&deleted=1' ) );

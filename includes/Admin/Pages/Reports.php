@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
 final class Reports {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-reports' );
 		$from  = isset( $_GET['from'] ) ? sanitize_text_field( wp_unslash( $_GET['from'] ) ) : gmdate( 'Y-m-01' );
 		$to    = isset( $_GET['to'] ) ? sanitize_text_field( wp_unslash( $_GET['to'] ) ) : gmdate( 'Y-m-d' );
 		$stats = Booking_Repository::stats( $from, $to );

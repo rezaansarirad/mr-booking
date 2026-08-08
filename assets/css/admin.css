@@ -4968,3 +4968,37 @@ body.mrb-hide-branding .mrb-setup__eyebrow {
     height: 44px;
   }
 }
+
+.mrb-access-roles {
+  display: grid;
+  gap: 14px;
+}
+
+.mrb-access-role {
+  padding: 16px;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  background: #fff;
+}
+
+.mrb-access-role h4 {
+  margin: 0 0 8px;
+  color: #0f766e;
+}
+
+.mrb-access-role p {
+  margin: 0 0 10px;
+  color: #64748b;
+}
+
+.mrb-access-role ul {
+  margin: 0;
+  padding-right: 18px;
+}
+
+.mrb-access-steps {
+  margin: 0 0 16px;
+  padding-right: 20px;
+  line-height: 1.8;
+  color: #475569;
+}

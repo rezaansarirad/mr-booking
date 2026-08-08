@@ -41,6 +41,7 @@ final class Settings_Page {
 	}
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-settings' );
 		$settings  = Settings::get();
 		$tab       = isset( $_GET['tab'] ) ? sanitize_text_field( wp_unslash( $_GET['tab'] ) ) : 'general';
 		$providers = SMS_Manager::providers();
@@ -53,7 +54,7 @@ final class Settings_Page {
 		$sms_account_credit = SMS_Manager::get_account_credit();
 
 		// Allow re-running setup wizard from settings.
-		if ( ! empty( $_GET['rerun_setup'] ) && current_user_can( \MRBooking\Helpers::manage_cap() ) ) { // phpcs:ignore
+		if ( ! empty( $_GET['rerun_setup'] ) && Helpers::user_can( \MRBooking\Roles\Capabilities::SETTINGS ) ) { // phpcs:ignore
 			check_admin_referer( 'mr_booking_rerun_setup' );
 			update_option( \MRBooking\Admin\Setup_Wizard::OPTION_COMPLETE, 0 );
 			\MRBooking\Admin\Setup_Wizard::mark_needed();
@@ -65,9 +66,7 @@ final class Settings_Page {
 	}
 
 	public static function save(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::SETTINGS );
 		check_admin_referer( 'mr_booking_save_settings' );
 
 		$raw  = isset( $_POST['settings'] ) && is_array( $_POST['settings'] ) ? wp_unslash( $_POST['settings'] ) : array(); // phpcs:ignore
@@ -186,9 +185,7 @@ final class Settings_Page {
 	}
 
 	public static function apply_theme(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::SETTINGS );
 		check_admin_referer( 'mr_booking_apply_theme' );
 
 		$theme = isset( $_GET['theme'] ) ? sanitize_key( wp_unslash( $_GET['theme'] ) ) : '';

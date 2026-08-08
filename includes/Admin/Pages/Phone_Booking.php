@@ -19,6 +19,7 @@ defined( 'ABSPATH' ) || exit;
 final class Phone_Booking {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking-phone' );
 		$settings = Settings::get();
 		$services = Service_Repository::all( 'active' );
 		$staff    = Staff_Repository::all( 'active' );

@@ -18,6 +18,7 @@ final class Installer {
 	public static function activate(): void {
 		self::create_tables();
 		self::seed_defaults();
+		\MRBooking\Roles\Roles::register();
 		Helpers::ensure_caps();
 		update_option( 'mr_booking_db_version', MR_BOOKING_DB_VERSION );
 

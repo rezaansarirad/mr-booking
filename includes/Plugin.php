@@ -11,6 +11,8 @@ namespace MRBooking;
 
 use MRBooking\Admin\Admin;
 use MRBooking\Admin\Admin_Bar;
+use MRBooking\Admin\Restricted_Admin;
+use MRBooking\Roles\Roles;
 use MRBooking\API\Rest_Controller;
 use MRBooking\Elementor\Bootstrap as Elementor_Bootstrap;
 use MRBooking\Frontend\Assets as Frontend_Assets;
@@ -36,9 +38,11 @@ final class Plugin {
 	public function boot(): void {
 		Settings::init();
 
+		( new Roles() )->hooks();
 		( new Admin_Bar() )->hooks();
 
 		if ( is_admin() ) {
+			( new Restricted_Admin() )->hooks();
 			( new Admin() )->hooks();
 		}
 

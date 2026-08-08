@@ -20,6 +20,7 @@ defined( 'ABSPATH' ) || exit;
 final class Dashboard {
 
 	public static function render(): void {
+		Helpers::require_page( 'mr-booking' );
 		$today = current_time( 'Y-m-d' );
 		$stats = Booking_Repository::stats( gmdate( 'Y-m-01' ), gmdate( 'Y-m-t' ) );
 		$today_bookings = Booking_Repository::query(
@@ -52,9 +53,7 @@ final class Dashboard {
 	}
 
 	public static function hide_form_help(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_die( 'Forbidden' );
-		}
+		Helpers::require_cap( \MRBooking\Roles\Capabilities::DASHBOARD );
 		check_admin_referer( 'mr_booking_hide_form_help' );
 
 		Settings::update( array( 'dashboard_show_form_help' => 0 ) );

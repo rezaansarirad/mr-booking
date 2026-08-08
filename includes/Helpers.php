@@ -423,28 +423,44 @@ final class Helpers {
 	}
 
 	/**
-	 * Current capability for managing bookings.
-	 * Admins always pass via manage_options; custom cap is for dedicated roles.
+	 * Current capability for full plugin management.
 	 */
 	public static function manage_cap(): string {
-		return apply_filters( 'mr_booking_manage_cap', 'manage_options' );
+		return apply_filters( 'mr_booking_manage_cap', \MRBooking\Roles\Capabilities::MANAGE );
+	}
+
+	/**
+	 * Capability required to see the plugin menu.
+	 */
+	public static function access_cap(): string {
+		return \MRBooking\Roles\Capabilities::ACCESS;
+	}
+
+	public static function user_can( string $cap ): bool {
+		return \MRBooking\Roles\Capabilities::user_can( $cap );
+	}
+
+	public static function user_can_page( string $page_slug ): bool {
+		return \MRBooking\Roles\Capabilities::user_can_page( $page_slug );
+	}
+
+	public static function require_cap( string $cap ): void {
+		if ( ! self::user_can( $cap ) ) {
+			wp_die( esc_html__( 'شما اجازه دسترسی به این بخش را ندارید.', 'mr-booking' ), 403 );
+		}
+	}
+
+	public static function require_page( string $page_slug ): void {
+		if ( ! self::user_can_page( $page_slug ) ) {
+			wp_die( esc_html__( 'شما اجازه دسترسی به این بخش را ندارید.', 'mr-booking' ), 403 );
+		}
 	}
 
 	/**
 	 * Ensure manage capability exists for admins (legacy custom cap + options).
 	 */
 	public static function ensure_caps(): void {
-		$role = get_role( 'administrator' );
-		if ( ! $role ) {
-			return;
-		}
-		if ( ! $role->has_cap( 'manage_mr_booking' ) ) {
-			$role->add_cap( 'manage_mr_booking' );
-		}
-		if ( ! $role->has_cap( 'manage_options' ) ) {
-			// Administrator should already have this; no-op safety.
-			return;
-		}
+		\MRBooking\Roles\Roles::register();
 	}
 
 	/**

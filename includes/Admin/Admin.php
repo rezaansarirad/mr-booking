@@ -13,6 +13,7 @@ use MRBooking\Export\Exporter;
 use MRBooking\Bookings\Booking_Repository;
 use MRBooking\Helpers;
 use MRBooking\Notifications\SMS\SMS_Manager;
+use MRBooking\Roles\Capabilities;
 use MRBooking\Settings\Color_Presets;
 use MRBooking\Settings\Settings;
 
@@ -53,13 +54,12 @@ final class Admin {
 	}
 
 	public function menu(): void {
-		$cap  = Helpers::manage_cap();
 		$name = Helpers::plugin_name();
 
 		add_menu_page(
 			$name,
 			$name,
-			$cap,
+			Helpers::access_cap(),
 			'mr-booking',
 			array( Pages\Dashboard::class, 'render' ),
 			'dashicons-calendar-alt',
@@ -67,18 +67,18 @@ final class Admin {
 		);
 
 		$pages = array(
-			'mr-booking'            => array( __( 'داشبورد', 'mr-booking' ), array( Pages\Dashboard::class, 'render' ) ),
-			'mr-booking-appointments' => array( __( 'نوبت‌ها', 'mr-booking' ), array( Pages\Appointments::class, 'render' ) ),
-			'mr-booking-phone'        => array( __( 'رزرو تلفنی', 'mr-booking' ), array( Pages\Phone_Booking::class, 'render' ) ),
-			'mr-booking-calendar'   => array( __( 'تقویم', 'mr-booking' ), array( Pages\Calendar_View::class, 'render' ) ),
-			'mr-booking-customers'  => array( __( 'مشتریان', 'mr-booking' ), array( Pages\Customers::class, 'render' ) ),
-			'mr-booking-services'   => array( __( 'خدمات', 'mr-booking' ), array( Pages\Services::class, 'render' ) ),
-			'mr-booking-staff'      => array( __( 'پرسنل', 'mr-booking' ), array( Pages\Staff_Page::class, 'render' ) ),
-			'mr-booking-hours'      => array( __( 'ساعات کاری', 'mr-booking' ), array( Pages\Working_Hours::class, 'render' ) ),
-			'mr-booking-holidays'   => array( __( 'تعطیلات', 'mr-booking' ), array( Pages\Holidays::class, 'render' ) ),
-			'mr-booking-notifications' => array( __( 'اعلان‌ها', 'mr-booking' ), array( Pages\Notifications::class, 'render' ) ),
-			'mr-booking-reports'    => array( __( 'گزارش‌ها', 'mr-booking' ), array( Pages\Reports::class, 'render' ) ),
-			'mr-booking-settings'   => array( __( 'تنظیمات', 'mr-booking' ), array( Pages\Settings_Page::class, 'render' ) ),
+			'mr-booking'              => array( __( 'داشبورد', 'mr-booking' ), array( Pages\Dashboard::class, 'render' ), Capabilities::DASHBOARD ),
+			'mr-booking-appointments' => array( __( 'نوبت‌ها', 'mr-booking' ), array( Pages\Appointments::class, 'render' ), Capabilities::APPOINTMENTS ),
+			'mr-booking-phone'        => array( __( 'رزرو تلفنی', 'mr-booking' ), array( Pages\Phone_Booking::class, 'render' ), Capabilities::PHONE ),
+			'mr-booking-calendar'     => array( __( 'تقویم', 'mr-booking' ), array( Pages\Calendar_View::class, 'render' ), Capabilities::CALENDAR ),
+			'mr-booking-customers'    => array( __( 'مشتریان', 'mr-booking' ), array( Pages\Customers::class, 'render' ), Capabilities::CUSTOMERS ),
+			'mr-booking-services'     => array( __( 'خدمات', 'mr-booking' ), array( Pages\Services::class, 'render' ), Capabilities::SERVICES ),
+			'mr-booking-staff'        => array( __( 'پرسنل', 'mr-booking' ), array( Pages\Staff_Page::class, 'render' ), Capabilities::STAFF ),
+			'mr-booking-hours'        => array( __( 'ساعات کاری', 'mr-booking' ), array( Pages\Working_Hours::class, 'render' ), Capabilities::HOURS ),
+			'mr-booking-holidays'     => array( __( 'تعطیلات', 'mr-booking' ), array( Pages\Holidays::class, 'render' ), Capabilities::HOLIDAYS ),
+			'mr-booking-notifications'=> array( __( 'اعلان‌ها', 'mr-booking' ), array( Pages\Notifications::class, 'render' ), Capabilities::NOTIFICATIONS ),
+			'mr-booking-reports'      => array( __( 'گزارش‌ها', 'mr-booking' ), array( Pages\Reports::class, 'render' ), Capabilities::REPORTS ),
+			'mr-booking-settings'     => array( __( 'تنظیمات', 'mr-booking' ), array( Pages\Settings_Page::class, 'render' ), Capabilities::SETTINGS ),
 		);
 
 		foreach ( $pages as $slug => $cfg ) {
@@ -86,7 +86,7 @@ final class Admin {
 				'mr-booking',
 				$cfg[0],
 				$cfg[0],
-				$cap,
+				$cfg[2],
 				$slug,
 				$cfg[1]
 			);
@@ -94,7 +94,7 @@ final class Admin {
 	}
 
 	public function menu_badges(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+		if ( ! Helpers::user_can( Capabilities::APPOINTMENTS ) ) {
 			return;
 		}
 
@@ -163,7 +163,7 @@ final class Admin {
 				array(
 					'ajaxUrl' => admin_url( 'admin-ajax.php' ),
 					'nonce'   => wp_create_nonce( 'mr_booking_admin' ),
-					'pollBookings'    => false !== strpos( $hook, 'mr-booking' ) && $notify_poll_seconds > 0,
+					'pollBookings'    => false !== strpos( $hook, 'mr-booking' ) && $notify_poll_seconds > 0 && Helpers::user_can( Capabilities::APPOINTMENTS ),
 					'latestBookingId' => Booking_Repository::latest_id(),
 					'appointmentsUrl' => admin_url( 'admin.php?page=mr-booking-appointments' ),
 					'dashboardUrl'    => admin_url( 'admin.php?page=mr-booking' ),
@@ -270,7 +270,7 @@ final class Admin {
 	}
 
 	public function handle_exports(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+		if ( ! Helpers::user_can( Capabilities::REPORTS ) ) {
 			return;
 		}
 
@@ -287,13 +287,13 @@ final class Admin {
 
 	public function ajax(): void {
 		check_ajax_referer( 'mr_booking_admin', 'nonce' );
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
-			wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
-		}
 
 		$action = sanitize_text_field( wp_unslash( $_POST['mr_action'] ?? '' ) );
 
 		if ( 'update_status' === $action ) {
+			if ( ! Helpers::user_can( Capabilities::APPOINTMENTS ) ) {
+				wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+			}
 			$id     = absint( $_POST['id'] ?? 0 );
 			$status = sanitize_text_field( wp_unslash( $_POST['status'] ?? '' ) );
 			$ok = Booking_Repository::update_status( $id, $status );
@@ -301,6 +301,9 @@ final class Admin {
 		}
 
 		if ( 'check_new_bookings' === $action ) {
+			if ( ! Helpers::user_can( Capabilities::APPOINTMENTS ) ) {
+				wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+			}
 			$since_id = absint( $_POST['since_id'] ?? 0 );
 			$new      = Booking_Repository::query(
 				array(
@@ -321,6 +324,9 @@ final class Admin {
 		}
 
 		if ( 'test_sms_connection' === $action ) {
+			if ( ! Helpers::user_can( Capabilities::SETTINGS ) ) {
+				wp_send_json_error( array( 'message' => 'Forbidden' ), 403 );
+			}
 			$fields = array(
 				'sms_provider' => sanitize_text_field( wp_unslash( $_POST['sms_provider'] ?? '' ) ),
 				'sms_api_key'  => sanitize_text_field( wp_unslash( $_POST['sms_api_key'] ?? '' ) ),

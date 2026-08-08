@@ -125,7 +125,7 @@ final class Dashboard_Widget {
 	}
 
 	public function register(): void {
-		if ( ! current_user_can( Helpers::manage_cap() ) ) {
+		if ( ! Helpers::user_can( \MRBooking\Roles\Capabilities::DASHBOARD ) ) {
 			return;
 		}
 

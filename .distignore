@@ -1,0 +1,13 @@
+.git
+.gitignore
+.distignore
+.github
+.DS_Store
+__MACOSX
+*.zip
+*.log
+node_modules
+.cursor
+.idea
+*.md
+!readme.txt

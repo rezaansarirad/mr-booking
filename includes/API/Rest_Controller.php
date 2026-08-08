@@ -14,6 +14,7 @@ use MRBooking\Bookings\Slot_Engine;
 use MRBooking\Calendar\Jalali;
 use MRBooking\Customers\Customer_Repository;
 use MRBooking\Helpers;
+use MRBooking\Roles\Capabilities;
 use MRBooking\Services\Service_Repository;
 use MRBooking\Settings\Settings;
 use MRBooking\Staff\Staff_Repository;
@@ -113,7 +114,7 @@ final class Rest_Controller {
 	}
 
 	public function admin_permission(): bool {
-		return current_user_can( Helpers::manage_cap() );
+		return Helpers::user_can( Capabilities::PHONE ) || Helpers::user_can( Capabilities::APPOINTMENTS );
 	}
 
 	/**
@@ -122,7 +123,7 @@ final class Rest_Controller {
 	 * @return 'jalali'|'gregorian'|'both'
 	 */
 	private function resolve_calendar_mode( WP_REST_Request $request ): string {
-		if ( current_user_can( Helpers::manage_cap() ) ) {
+		if ( Helpers::user_can( Capabilities::PHONE ) || Helpers::user_can( Capabilities::APPOINTMENTS ) || Helpers::user_can( Capabilities::CALENDAR ) ) {
 			$param = sanitize_key( (string) $request->get_param( 'calendar_mode' ) );
 			if ( in_array( $param, array( 'jalali', 'gregorian', 'both' ), true ) ) {
 				return $param;
@@ -190,7 +191,7 @@ final class Rest_Controller {
 			);
 		}
 
-		$is_admin    = current_user_can( Helpers::manage_cap() );
+		$is_admin    = Capabilities::user_has_any_booking_access();
 		$date_ymd    = substr( (string) $booking->start_datetime, 0, 10 );
 		$show_prices = ! empty( Settings::get_value( 'show_prices' ) );
 		$payload     = array(
@@ -303,7 +304,7 @@ final class Rest_Controller {
 		$days = Slot_Engine::month_availability( $from, $to, $duration, $staff_id, $service_ids );
 
 		// Enrich with display labels.
-		$is_admin = current_user_can( Helpers::manage_cap() );
+		$is_admin = Capabilities::user_has_any_booking_access();
 		foreach ( $days as &$day ) {
 			if ( $is_admin ) {
 				$day['jalali'] = Helpers::format_admin_date( $day['date'] );
