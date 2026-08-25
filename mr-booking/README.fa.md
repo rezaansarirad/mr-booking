@@ -7,7 +7,6 @@
 **نسخه:** 2.5.2  
 **سازنده:** [Reza Ansarirad](https://rezaansarirad.ir)  
 **نیازمندی‌ها:** WordPress 5.8+ · PHP 8.0+
-
 جزئیات کامل نسخه‌ها: [CHANGELOG.md](CHANGELOG.md)
 
 ---
@@ -16,56 +15,56 @@
 
 ### پنل مدیریت
 
-| | |
-| --- | --- |
-| **داشبورد** — آمار، رزروهای امروز، فعالیت اخیر | **نوبت‌ها** — فیلتر، وضعیت‌ها، تأیید/رد |
-| ![داشبورد](assets/img/Screenshots/dashboard.png) | ![نوبت‌ها](assets/img/Screenshots/appointments.png) |
-| **رزرو تلفنی** — ثبت دستی از پنل | **مشتریان** — جستجو، تولد، کیف پول، خروجی CSV |
-| ![رزرو تلفنی](assets/img/Screenshots/phone-booking.png) | ![مشتریان](assets/img/Screenshots/customers.png) |
-| **خدمات** — کارت‌ها با عملیات سریع | **خدمت جدید** — مدت و وضعیت قیمت |
-| ![خدمات](assets/img/Screenshots/services-list.png) | ![ویرایش خدمت](assets/img/Screenshots/service-editor.png) |
-| **پرسنل** — لیست با خدمات هر نفر | **ویرایش پرسنل** — پروفایل و انتخاب خدمات |
-| ![پرسنل](assets/img/Screenshots/staff-list.png) | ![ویرایش پرسنل](assets/img/Screenshots/staff-editor.png) |
-| **ساعات کاری** — بازه‌های هر روز | **ساعات مسدود** — ناهار و استراحت تکراری |
-| ![ساعات کاری](assets/img/Screenshots/staff-hours.png) | ![ساعات مسدود](assets/img/Screenshots/blocked-hours.png) |
-| **تعطیلات و تاریخ‌های خاص** | **گزارش‌ها** — بازه تاریخ و خدمات محبوب |
-| ![تعطیلات](assets/img/Screenshots/holidays.png) | ![گزارش‌ها](assets/img/Screenshots/reports.png) |
-| **قالب‌های اعلان** — متغیرها و تأیید مشتری | **قالب ایمیل / پیامک** — ویرایش هر رویداد |
+|                                                                   |                                                                           |
+| ----------------------------------------------------------------- | ------------------------------------------------------------------------- |
+| **داشبورد** — آمار، رزروهای امروز، فعالیت اخیر                    | **نوبت‌ها** — فیلتر، وضعیت‌ها، تأیید/رد                                   |
+| ![داشبورد](assets/img/Screenshots/dashboard.png)                  | ![نوبت‌ها](assets/img/Screenshots/appointments.png)                       |
+| **رزرو تلفنی** — ثبت دستی از پنل                                  | **مشتریان** — جستجو، تولد، کیف پول، خروجی CSV                             |
+| ![رزرو تلفنی](assets/img/Screenshots/phone-booking.png)           | ![مشتریان](assets/img/Screenshots/customers.png)                          |
+| **خدمات** — کارت‌ها با عملیات سریع                                | **خدمت جدید** — مدت و وضعیت قیمت                                          |
+| ![خدمات](assets/img/Screenshots/services-list.png)                | ![ویرایش خدمت](assets/img/Screenshots/service-editor.png)                 |
+| **پرسنل** — لیست با خدمات هر نفر                                  | **ویرایش پرسنل** — پروفایل و انتخاب خدمات                                 |
+| ![پرسنل](assets/img/Screenshots/staff-list.png)                   | ![ویرایش پرسنل](assets/img/Screenshots/staff-editor.png)                  |
+| **ساعات کاری** — بازه‌های هر روز                                  | **ساعات مسدود** — ناهار و استراحت تکراری                                  |
+| ![ساعات کاری](assets/img/Screenshots/staff-hours.png)             | ![ساعات مسدود](assets/img/Screenshots/blocked-hours.png)                  |
+| **تعطیلات و تاریخ‌های خاص**                                       | **گزارش‌ها** — بازه تاریخ و خدمات محبوب                                   |
+| ![تعطیلات](assets/img/Screenshots/holidays.png)                   | ![گزارش‌ها](assets/img/Screenshots/reports.png)                           |
+| **قالب‌های اعلان** — متغیرها و تأیید مشتری                        | **قالب ایمیل / پیامک** — ویرایش هر رویداد                                 |
 | ![قالب اعلان](assets/img/Screenshots/notifications-templates.png) | ![قالب ایمیل و پیامک](assets/img/Screenshots/notifications-email-sms.png) |
-| **منوی وردپرس** (badge در انتظار) | **اعلان زنده** رزرو جدید در پنل |
-| ![منوی ادمین](assets/img/Screenshots/admin-menu.png) | ![اعلان زنده](assets/img/Screenshots/admin-live-notification.png) |
+| **منوی وردپرس** (badge در انتظار)                                 | **اعلان زنده** رزرو جدید در پنل                                           |
+| ![منوی ادمین](assets/img/Screenshots/admin-menu.png)              | ![اعلان زنده](assets/img/Screenshots/admin-live-notification.png)         |
 
 ### تنظیمات
 
-| | |
-| --- | --- |
-| **عمومی** — کسب‌وکار، نوع ساعات، گزینه‌های فرم | **تب‌های تنظیمات** — منوی کناری |
-| ![تنظیمات عمومی](assets/img/Screenshots/settings-general.png) | ![تب‌های تنظیمات](assets/img/Screenshots/settings-tabs.png) |
-| **تقویم** — شمسی / میلادی / هر دو | **قوانین رزرو** — اسلات‌ها و الزامات |
-| ![تنظیمات تقویم](assets/img/Screenshots/settings-calendar.png) | ![قوانین رزرو](assets/img/Screenshots/settings-booking-rules.png) |
-| **ظاهر** — قالب تیره / روشن | **پالت رنگ** — دکمه‌ها و لودینگ |
-| ![قالب ظاهر](assets/img/Screenshots/settings-appearance-themes.png) | ![رنگ دکمه‌ها](assets/img/Screenshots/settings-appearance-buttons.png) |
-| **رنگ کارت خدمات** | **رنگ روزهای تقویم** |
+|                                                                                 |                                                                              |
+| ------------------------------------------------------------------------------- | ---------------------------------------------------------------------------- |
+| **عمومی** — کسب‌وکار، نوع ساعات، گزینه‌های فرم                                  | **تب‌های تنظیمات** — منوی کناری                                              |
+| ![تنظیمات عمومی](assets/img/Screenshots/settings-general.png)                   | ![تب‌های تنظیمات](assets/img/Screenshots/settings-tabs.png)                  |
+| **تقویم** — شمسی / میلادی / هر دو                                               | **قوانین رزرو** — اسلات‌ها و الزامات                                         |
+| ![تنظیمات تقویم](assets/img/Screenshots/settings-calendar.png)                  | ![قوانین رزرو](assets/img/Screenshots/settings-booking-rules.png)            |
+| **ظاهر** — قالب تیره / روشن                                                     | **پالت رنگ** — دکمه‌ها و لودینگ                                              |
+| ![قالب ظاهر](assets/img/Screenshots/settings-appearance-themes.png)             | ![رنگ دکمه‌ها](assets/img/Screenshots/settings-appearance-buttons.png)       |
+| **رنگ کارت خدمات**                                                              | **رنگ روزهای تقویم**                                                         |
 | ![رنگ کارت خدمات](assets/img/Screenshots/settings-appearance-service-cards.png) | ![رنگ تقویم](assets/img/Screenshots/settings-appearance-calendar-colors.png) |
-| **متن‌ها** — مراحل و دکمه‌ها | **Placeholder** — راهنمای فیلدها |
-| ![متن‌های فرم](assets/img/Screenshots/settings-texts-labels.png) | ![Placeholder](assets/img/Screenshots/settings-texts-placeholders.png) |
-| **ویجت پیشخوان** | **پیامک** — سرویس‌دهنده و API |
-| ![ویجت پیشخوان](assets/img/Screenshots/settings-dashboard-widget.png) | ![تنظیمات پیامک](assets/img/Screenshots/settings-sms.png) |
-| **ایمیل** — فرستنده و گیرندگان | **پریمیوم** — مخفی‌کردن برند در فرم عمومی |
-| ![تنظیمات ایمیل](assets/img/Screenshots/settings-email.png) | ![پریمیوم](assets/img/Screenshots/settings-premium.png) |
-| **گیت‌هاب** — لینک پروژه متن‌باز | |
-| ![گیت‌هاب](assets/img/Screenshots/settings-github.png) | |
+| **متن‌ها** — مراحل و دکمه‌ها                                                    | **Placeholder** — راهنمای فیلدها                                             |
+| ![متن‌های فرم](assets/img/Screenshots/settings-texts-labels.png)                | ![Placeholder](assets/img/Screenshots/settings-texts-placeholders.png)       |
+| **ویجت پیشخوان**                                                                | **پیامک** — سرویس‌دهنده و API                                                |
+| ![ویجت پیشخوان](assets/img/Screenshots/settings-dashboard-widget.png)           | ![تنظیمات پیامک](assets/img/Screenshots/settings-sms.png)                    |
+| **ایمیل** — فرستنده و گیرندگان                                                  | **پریمیوم** — مخفی‌کردن برند در فرم عمومی                                    |
+| ![تنظیمات ایمیل](assets/img/Screenshots/settings-email.png)                     | ![پریمیوم](assets/img/Screenshots/settings-premium.png)                      |
+| **گیت‌هاب** — لینک پروژه متن‌باز                                                |                                                                              |
+| ![گیت‌هاب](assets/img/Screenshots/settings-github.png)                          |                                                                              |
 
 ### فرم رزرو (فرانت)
 
-| | |
-| --- | --- |
-| **مرحله ۱** — اطلاعات شخصی و «رزرو برای» | **مرحله ۲** — پرسنل و انتخاب خدمت |
+|                                                               |                                                               |
+| ------------------------------------------------------------- | ------------------------------------------------------------- |
+| **مرحله ۱** — اطلاعات شخصی و «رزرو برای»                      | **مرحله ۲** — پرسنل و انتخاب خدمت                             |
 | ![مرحله ۱](assets/img/Screenshots/frontend-step-personal.png) | ![مرحله ۲](assets/img/Screenshots/frontend-step-services.png) |
-| **مرحله ۳** — تقویم شمسی | **مرحله ۴** — انتخاب ساعت |
-| ![مرحله ۳](assets/img/Screenshots/frontend-step-date.png) | ![مرحله ۴](assets/img/Screenshots/frontend-step-time.png) |
-| **موفقیت** — رسید تأیید رزرو | **انتخاب تاریخ تولد** — چرخ iOS-style با فلش در دسکتاپ |
-| ![ثبت موفق](assets/img/Screenshots/frontend-success.png) | ![تاریخ تولد](assets/img/Screenshots/birth-date-picker.png) |
+| **مرحله ۳** — تقویم شمسی                                      | **مرحله ۴** — انتخاب ساعت                                     |
+| ![مرحله ۳](assets/img/Screenshots/frontend-step-date.png)     | ![مرحله ۴](assets/img/Screenshots/frontend-step-time.png)     |
+| **موفقیت** — رسید تأیید رزرو                                  | **انتخاب تاریخ تولد** — چرخ iOS-style با فلش در دسکتاپ        |
+| ![ثبت موفق](assets/img/Screenshots/frontend-success.png)      | ![تاریخ تولد](assets/img/Screenshots/birth-date-picker.png)   |
 
 ---
 
@@ -196,13 +195,13 @@
 
 ### اعلان به مشتری
 
-| رویداد | زمان |
-| ------ | ---- |
-| **ثبت درخواست** | بلافاصله بعد از ثبت رزرو |
-| **تأیید رزرو** | بعد از تأیید ادمین |
-| **لغو / رد** | هنگام رد، لغو یا حذف رزرو آینده |
-| **یادآوری** | قبل از زمان نوبت |
-| **تولد** | پیامک تبریک تولد (در صورت پیکربندی) |
+| رویداد          | زمان                                |
+| --------------- | ----------------------------------- |
+| **ثبت درخواست** | بلافاصله بعد از ثبت رزرو            |
+| **تأیید رزرو**  | بعد از تأیید ادمین                  |
+| **لغو / رد**    | هنگام رد، لغو یا حذف رزرو آینده     |
+| **یادآوری**     | قبل از زمان نوبت                    |
+| **تولد**        | پیامک تبریک تولد (در صورت پیکربندی) |
 
 قالب‌ها در **اعلان‌ها**. همه ارسال‌ها در `notification_logs` ثبت می‌شوند.
 
@@ -218,10 +217,10 @@
 
 ## نقش‌های کاربری و دسترسی
 
-| نقش | دسترسی |
-| --- | ------ |
+| نقش                                       | دسترسی                                            |
+| ----------------------------------------- | ------------------------------------------------- |
 | **منشی رزرو** (`mr_booking_receptionist`) | نوبت‌ها، رزرو تلفنی، مراجعه حضوری، مشتریان، تقویم |
-| **مدیر رزرو** (`mr_booking_manager`) | همه بخش‌ها شامل **تنظیمات** و حسابداری |
+| **مدیر رزرو** (`mr_booking_manager`)      | همه بخش‌ها شامل **تنظیمات** و حسابداری            |
 
 کاربران فقط‌رزرو فقط منوی افزونه را می‌بینند. قابلیت‌های `mr_booking_*` با User Role Editor قابل تنظیم‌اند. راهنما: **تنظیمات → دسترسی**.
 
@@ -298,27 +297,27 @@ add_filter( 'mr_booking_sms_providers', function( $providers ) {
 
 پایه: `/wp-json/mr-booking/v1/`
 
-| Endpoint | Method | دسترسی | توضیح |
-| -------- | ------ | ------ | ----- |
-| `/services` | GET | عمومی | لیست خدمات |
-| `/staff` | GET | عمومی | لیست پرسنل |
-| `/availability/month` | GET | عمومی | موجودی ماه |
-| `/availability/slots` | GET | عمومی | اسلات‌های یک روز |
-| `/book` | POST | عمومی (nonce) | ثبت رزرو |
-| `/settings/public` | GET | عمومی | تنظیمات عمومی فرانت |
-| `/payment/callback` | GET | عمومی | بازگشت زرین‌پال |
-| `/auth/request-otp` | POST | عمومی* | درخواست OTP |
-| `/auth/verify-otp` | POST | عمومی* | تأیید OTP |
-| `/auth/complete-profile` | POST | عمومی* | تکمیل ثبت‌نام |
-| `/auth/logout` | POST | واردشده | خروج |
-| `/me` | GET | مشتری | مشتری جاری |
-| `/me/bookings` | GET | مشتری | نوبت‌های من |
-| `/me/bookings/{id}/cancel` | POST | مشتری | لغو نوبت |
-| `/me/wallet` | GET | مشتری | موجودی + دفتر |
-| `/me/wallet/topup` | POST | مشتری | شروع افزایش موجودی |
-| `/admin/customers/search` | GET | ادمین | جستجوی مشتری |
-| `/admin/book` | POST | ادمین | رزرو تلفنی |
-| `/admin/walkin` | POST | ادمین | مراجعه حضوری |
+| Endpoint                   | Method | دسترسی        | توضیح               |
+| -------------------------- | ------ | ------------- | ------------------- |
+| `/services`                | GET    | عمومی         | لیست خدمات          |
+| `/staff`                   | GET    | عمومی         | لیست پرسنل          |
+| `/availability/month`      | GET    | عمومی         | موجودی ماه          |
+| `/availability/slots`      | GET    | عمومی         | اسلات‌های یک روز    |
+| `/book`                    | POST   | عمومی (nonce) | ثبت رزرو            |
+| `/settings/public`         | GET    | عمومی         | تنظیمات عمومی فرانت |
+| `/payment/callback`        | GET    | عمومی         | بازگشت زرین‌پال     |
+| `/auth/request-otp`        | POST   | عمومی\*       | درخواست OTP         |
+| `/auth/verify-otp`         | POST   | عمومی\*       | تأیید OTP           |
+| `/auth/complete-profile`   | POST   | عمومی\*       | تکمیل ثبت‌نام       |
+| `/auth/logout`             | POST   | واردشده       | خروج                |
+| `/me`                      | GET    | مشتری         | مشتری جاری          |
+| `/me/bookings`             | GET    | مشتری         | نوبت‌های من         |
+| `/me/bookings/{id}/cancel` | POST   | مشتری         | لغو نوبت            |
+| `/me/wallet`               | GET    | مشتری         | موجودی + دفتر       |
+| `/me/wallet/topup`         | POST   | مشتری         | شروع افزایش موجودی  |
+| `/admin/customers/search`  | GET    | ادمین         | جستجوی مشتری        |
+| `/admin/book`              | POST   | ادمین         | رزرو تلفنی          |
+| `/admin/walkin`            | POST   | ادمین         | مراجعه حضوری        |
 
 \* وقتی ورود مشتری فعال باشد.
 
@@ -395,17 +394,20 @@ cd /tmp/mr-booking-release && zip -r mr-booking.zip mr-booking
 جزئیات کامل: [CHANGELOG.md](CHANGELOG.md)
 
 ### 2.5.x
+
 - **2.5.2** — فاصله‌گذاری موبایل ویزارد داخل داشبورد حساب
 - **2.5.1** — رنگ‌بندی پنل مشتری: سبز ادمین (پیش‌فرض) یا همرنگ فرم رزرو
 - **2.5.0** — موجودی کیف پول در همه جای ادمین؛ ستون پرداخت در نوبت‌ها
 
 ### 2.4.x
+
 - **2.4.3** — رفع پنل کیف پول در صفحه جزئیات مشتری
 - **2.4.2** — رنگ داشبورد حساب از متغیرهای `--mrb-*`
 - **2.4.1** — پولیش فرم: آیکون پروفایل، ویزارد عریض‌تر، پیش‌پرداخت ۵۰٪، مودال قوانین
 - **2.4.0** — بازطراحی داشبورد حساب، تب رزرو داخل پنل، فرم افزایش موجودی همیشه نمایان
 
 ### 2.3.x – 2.0.0
+
 - **2.3.1** — OTP کاوه‌نگار Verify، اصلاح نمایش شماره RTL، طراحی صفحه حساب
 - **2.3.0** — افزایش موجودی کیف پول از طریق زرین‌پال
 - **2.2.0** — پیش‌پرداخت، مرحله پرداخت، زرین‌پال، کیف پول، قوانین
