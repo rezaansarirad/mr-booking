@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="assets/img/sticker.gif" alt="MR Booking" width="160" />
+  <img src="mr-booking/assets/img/sticker.gif" alt="MR Booking" width="160" />
 </p>
 
 # MR Booking
@@ -23,53 +23,53 @@ Full release notes: [CHANGELOG.md](CHANGELOG.md)
 |                                                                               |                                                                                |
 | ----------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
 | **Dashboard** — stats, today’s bookings, recent activity                      | **Appointments** — filters, status pills, approve/reject                       |
-| ![Dashboard](assets/img/Screenshots/dashboard.png)                            | ![Appointments](assets/img/Screenshots/appointments.png)                       |
+| ![Dashboard](mr-booking/assets/img/Screenshots/dashboard.png)                            | ![Appointments](mr-booking/assets/img/Screenshots/appointments.png)                       |
 | **Phone booking** — manual reservation from admin                             | **Customers** — search, birthdays, wallet, CSV export                          |
-| ![Phone booking](assets/img/Screenshots/phone-booking.png)                    | ![Customers](assets/img/Screenshots/customers.png)                             |
+| ![Phone booking](mr-booking/assets/img/Screenshots/phone-booking.png)                    | ![Customers](mr-booking/assets/img/Screenshots/customers.png)                             |
 | **Services** — card grid with quick actions                                   | **New service** — duration presets & price toggle                              |
-| ![Services](assets/img/Screenshots/services-list.png)                         | ![Service editor](assets/img/Screenshots/service-editor.png)                   |
+| ![Services](mr-booking/assets/img/Screenshots/services-list.png)                         | ![Service editor](mr-booking/assets/img/Screenshots/service-editor.png)                   |
 | **Staff** — team list with assigned services                                  | **Staff editor** — profile & service picker cards                              |
-| ![Staff](assets/img/Screenshots/staff-list.png)                               | ![Staff editor](assets/img/Screenshots/staff-editor.png)                       |
+| ![Staff](mr-booking/assets/img/Screenshots/staff-list.png)                               | ![Staff editor](mr-booking/assets/img/Screenshots/staff-editor.png)                       |
 | **Working hours** — per-day intervals                                         | **Blocked hours** — lunch & recurring breaks                                   |
-| ![Staff hours](assets/img/Screenshots/staff-hours.png)                        | ![Blocked hours](assets/img/Screenshots/blocked-hours.png)                     |
+| ![Staff hours](mr-booking/assets/img/Screenshots/staff-hours.png)                        | ![Blocked hours](mr-booking/assets/img/Screenshots/blocked-hours.png)                     |
 | **Holidays & special dates**                                                  | **Reports** — date range & popular services                                    |
-| ![Holidays](assets/img/Screenshots/holidays.png)                              | ![Reports](assets/img/Screenshots/reports.png)                                 |
+| ![Holidays](mr-booking/assets/img/Screenshots/holidays.png)                              | ![Reports](mr-booking/assets/img/Screenshots/reports.png)                                 |
 | **Notification templates** — variables & confirm toggle                       | **Email / SMS templates** — per-event editors                                  |
-| ![Notification templates](assets/img/Screenshots/notifications-templates.png) | ![Email and SMS templates](assets/img/Screenshots/notifications-email-sms.png) |
+| ![Notification templates](mr-booking/assets/img/Screenshots/notifications-templates.png) | ![Email and SMS templates](mr-booking/assets/img/Screenshots/notifications-email-sms.png) |
 | **WordPress admin menu** (pending badge)                                      | **Live booking toast** in admin                                                |
-| ![Admin menu](assets/img/Screenshots/admin-menu.png)                          | ![Live notification](assets/img/Screenshots/admin-live-notification.png)       |
+| ![Admin menu](mr-booking/assets/img/Screenshots/admin-menu.png)                          | ![Live notification](mr-booking/assets/img/Screenshots/admin-live-notification.png)       |
 
 ### Settings
 
 |                                                                                      |                                                                                    |
 | ------------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------- |
 | **General** — business, hours mode, form options                                     | **Settings tabs** — sidebar navigation                                             |
-| ![Settings general](assets/img/Screenshots/settings-general.png)                     | ![Settings tabs](assets/img/Screenshots/settings-tabs.png)                         |
+| ![Settings general](mr-booking/assets/img/Screenshots/settings-general.png)                     | ![Settings tabs](mr-booking/assets/img/Screenshots/settings-tabs.png)                         |
 | **Calendar** — Jalali / Gregorian / both                                             | **Booking rules** — slots & requirements                                           |
-| ![Settings calendar](assets/img/Screenshots/settings-calendar.png)                   | ![Settings booking rules](assets/img/Screenshots/settings-booking-rules.png)       |
+| ![Settings calendar](mr-booking/assets/img/Screenshots/settings-calendar.png)                   | ![Settings booking rules](mr-booking/assets/img/Screenshots/settings-booking-rules.png)       |
 | **Appearance** — dark / light themes                                                 | **Color palette** — buttons & loading spinner                                      |
-| ![Appearance themes](assets/img/Screenshots/settings-appearance-themes.png)          | ![Appearance buttons](assets/img/Screenshots/settings-appearance-buttons.png)      |
+| ![Appearance themes](mr-booking/assets/img/Screenshots/settings-appearance-themes.png)          | ![Appearance buttons](mr-booking/assets/img/Screenshots/settings-appearance-buttons.png)      |
 | **Service card colors**                                                              | **Calendar day colors**                                                            |
-| ![Service card colors](assets/img/Screenshots/settings-appearance-service-cards.png) | ![Calendar colors](assets/img/Screenshots/settings-appearance-calendar-colors.png) |
+| ![Service card colors](mr-booking/assets/img/Screenshots/settings-appearance-service-cards.png) | ![Calendar colors](mr-booking/assets/img/Screenshots/settings-appearance-calendar-colors.png) |
 | **Editable texts** — steps & buttons                                                 | **Placeholders** — form field hints                                                |
-| ![Text labels](assets/img/Screenshots/settings-texts-labels.png)                     | ![Placeholders](assets/img/Screenshots/settings-texts-placeholders.png)            |
+| ![Text labels](mr-booking/assets/img/Screenshots/settings-texts-labels.png)                     | ![Placeholders](mr-booking/assets/img/Screenshots/settings-texts-placeholders.png)            |
 | **Dashboard widget** options                                                         | **SMS** provider & API keys                                                        |
-| ![Dashboard widget settings](assets/img/Screenshots/settings-dashboard-widget.png)   | ![SMS settings](assets/img/Screenshots/settings-sms.png)                           |
+| ![Dashboard widget settings](mr-booking/assets/img/Screenshots/settings-dashboard-widget.png)   | ![SMS settings](mr-booking/assets/img/Screenshots/settings-sms.png)                           |
 | **Email** sender & recipients                                                        | **Premium** — white-label on public form                                           |
-| ![Email settings](assets/img/Screenshots/settings-email.png)                         | ![Premium settings](assets/img/Screenshots/settings-premium.png)                   |
+| ![Email settings](mr-booking/assets/img/Screenshots/settings-email.png)                         | ![Premium settings](mr-booking/assets/img/Screenshots/settings-premium.png)                   |
 | **GitHub** — open-source project link                                                |                                                                                    |
-| ![GitHub tab](assets/img/Screenshots/settings-github.png)                            |                                                                                    |
+| ![GitHub tab](mr-booking/assets/img/Screenshots/settings-github.png)                            |                                                                                    |
 
 ### Public booking form
 
 |                                                                      |                                                                      |
 | -------------------------------------------------------------------- | -------------------------------------------------------------------- |
 | **Step 1** — personal info & booking for                             | **Step 2** — staff & service selection                               |
-| ![Booking step 1](assets/img/Screenshots/frontend-step-personal.png) | ![Booking step 2](assets/img/Screenshots/frontend-step-services.png) |
+| ![Booking step 1](mr-booking/assets/img/Screenshots/frontend-step-personal.png) | ![Booking step 2](mr-booking/assets/img/Screenshots/frontend-step-services.png) |
 | **Step 3** — Jalali calendar                                         | **Step 4** — time slots                                              |
-| ![Booking step 3](assets/img/Screenshots/frontend-step-date.png)     | ![Booking step 4](assets/img/Screenshots/frontend-step-time.png)     |
+| ![Booking step 3](mr-booking/assets/img/Screenshots/frontend-step-date.png)     | ![Booking step 4](mr-booking/assets/img/Screenshots/frontend-step-time.png)     |
 | **Success** — confirmation receipt                                   | **Birth date picker** — iOS-style wheel with desktop arrows          |
-| ![Booking success](assets/img/Screenshots/frontend-success.png)      | ![Birth date picker](assets/img/Screenshots/birth-date-picker.png)   |
+| ![Booking success](mr-booking/assets/img/Screenshots/frontend-success.png)      | ![Birth date picker](mr-booking/assets/img/Screenshots/birth-date-picker.png)   |
 
 ---
 
