@@ -1,0 +1,938 @@
+(function ($) {
+  'use strict';
+
+  function toFa(n) {
+    return String(n).replace(/\d/g, function (d) {
+      return '۰۱۲۳۴۵۶۷۸۹'[d];
+    });
+  }
+
+  function formatDuration(minutes) {
+    var i18n = (window.mrBookingAdmin && mrBookingAdmin.i18n) || {};
+    minutes = parseInt(minutes, 10) || 0;
+    if (minutes < 60) {
+      return toFa(minutes) + ' ' + (i18n.minute || 'دقیقه');
+    }
+    var h = Math.floor(minutes / 60);
+    var m = minutes % 60;
+    if (!m) {
+      return toFa(h) + ' ' + (i18n.hour || 'ساعت');
+    }
+    var tpl = i18n.hourAndMinute || '%1$s ساعت و %2$s دقیقه';
+    return tpl.replace('%1$s', toFa(h)).replace('%2$s', toFa(m));
+  }
+
+  function syncDurationPreview() {
+    var input = document.getElementById('mrb-service-duration');
+    var preview = document.getElementById('mrb-duration-preview');
+    if (!input || !preview) return;
+    var mins = parseInt(input.value, 10) || 0;
+    var label = formatDuration(mins);
+    var tpl = (window.mrBookingAdmin && mrBookingAdmin.i18n.durationPreview) || 'این خدمت %s از وقت مشتری را می‌گیرد.';
+    preview.innerHTML = tpl.replace('%s', '<strong>' + label + '</strong>');
+
+    document.querySelectorAll('.mrb-duration-chip').forEach(function (chip) {
+      chip.classList.toggle('is-active', parseInt(chip.dataset.duration, 10) === mins);
+    });
+  }
+
+  $(document).on('click', '.mrb-duration-chip', function () {
+    var mins = $(this).data('duration');
+    $('#mrb-service-duration').val(mins);
+    syncDurationPreview();
+  });
+
+  $(document).on('input change', '#mrb-service-duration', syncDurationPreview);
+  syncDurationPreview();
+
+  function syncPriceToggle() {
+    var toggle = document.getElementById('mrb-has-price');
+    var box = document.getElementById('mrb-price-amount');
+    if (!toggle || !box) return;
+    var on = toggle.checked;
+    box.classList.toggle('is-hidden', !on);
+    var switchUi = toggle.closest('.mrb-switch');
+    if (switchUi) {
+      switchUi.classList.toggle('is-on', on);
+    }
+  }
+
+  $(document).on('change', '#mrb-has-price', syncPriceToggle);
+  syncPriceToggle();
+
+  // Deposit defaults to 50% of the price until the admin edits it by hand.
+  (function () {
+    var price = document.querySelector('input[name="price"][data-mrb-money]');
+    var deposit = document.getElementById('mrb-service-deposit');
+    var half = document.getElementById('mrb-deposit-half');
+    var money = window.mrbMoneyInput;
+    if (!price || !deposit || !money) return;
+    function halfOf(v) {
+      var n = Math.round((money.parse(v) * 0.5) / 1000) * 1000;
+      return n > 0 ? money.format(String(n)) : '';
+    }
+    price.addEventListener('input', function () {
+      if (deposit.dataset.auto === '1') deposit.value = halfOf(price.value);
+    });
+    deposit.addEventListener('input', function () {
+      deposit.dataset.auto = deposit.value === '' ? '1' : '0';
+    });
+    if (half) {
+      half.addEventListener('click', function () {
+        deposit.value = halfOf(price.value);
+        deposit.dataset.auto = '1';
+        deposit.focus();
+      });
+    }
+  })();
+
+  $(document).on('click', '.mrb-add-period', function () {
+    var day = $(this).data('day');
+    var prefix = $(this).closest('form').find('[name^="days["]').first().attr('name');
+    var field = prefix ? 'days' : 'days';
+    var row =
+      '<div class="mrb-period-row">' +
+      '<label class="mrb-period-field"><span>شروع</span>' +
+      '<input type="time" name="' + field + '[' + day + '][start][]" value="09:00" /></label>' +
+      '<span class="mrb-period-sep" aria-hidden="true">→</span>' +
+      '<label class="mrb-period-field"><span>پایان</span>' +
+      '<input type="time" name="' + field + '[' + day + '][end][]" value="13:00" /></label>' +
+      '<button type="button" class="button mrb-remove-period" aria-label="حذف بازه">' +
+      '<span class="dashicons dashicons-no-alt"></span></button>' +
+      '</div>';
+    $(this).before(row);
+  });
+
+  $(document).on('click', '.mrb-remove-period', function () {
+    var $periods = $(this).closest('.mrb-periods');
+    var $rows = $periods.find('.mrb-period-row');
+    if ($rows.length <= 1) return;
+    $(this).closest('.mrb-period-row').remove();
+  });
+
+  function syncDayClosed($checkbox) {
+    var $block = $checkbox.closest('.mrb-day-block');
+    if (!$block.length) return;
+    var closed = $checkbox.prop('checked');
+    $block.toggleClass('is-closed', closed).toggleClass('is-open', !closed);
+  }
+
+  $(document).on('change', '.mrb-day-closed', function (e) {
+    e.stopPropagation();
+    syncDayClosed($(this));
+  });
+
+  $(document).on('click', '.mrb-day-closed-toggle', function (e) {
+    e.stopPropagation();
+  });
+
+  $('.mrb-day-closed').each(function () {
+    syncDayClosed($(this));
+  });
+
+  function escAttr(val) {
+    return String(val || '')
+      .replace(/&/g, '&amp;')
+      .replace(/"/g, '&quot;')
+      .replace(/</g, '&lt;');
+  }
+
+  function blockRowHtml(day, start, end, label) {
+    return (
+      '<div class="mrb-block-row">' +
+      '<label class="mrb-period-field"><span>از</span>' +
+      '<input type="time" name="blocks[' + day + '][start][]" value="' + escAttr(start) + '" /></label>' +
+      '<span class="mrb-period-sep" aria-hidden="true">→</span>' +
+      '<label class="mrb-period-field"><span>تا</span>' +
+      '<input type="time" name="blocks[' + day + '][end][]" value="' + escAttr(end) + '" /></label>' +
+      '<label class="mrb-period-field mrb-period-field--label"><span>عنوان</span>' +
+      '<input type="text" name="blocks[' + day + '][label][]" value="' + escAttr(label) + '" placeholder="ناهار" /></label>' +
+      '<button type="button" class="button mrb-remove-block" aria-label="حذف">' +
+      '<span class="dashicons dashicons-no-alt"></span></button>' +
+      '</div>'
+    );
+  }
+
+  function readBlocksFromDay($daySection) {
+    var blocks = [];
+    $daySection.find('.mrb-block-row').each(function () {
+      var $row = $(this);
+      blocks.push({
+        start: $row.find('input[name*="[start]"]').val() || '',
+        end: $row.find('input[name*="[end]"]').val() || '',
+        label: $row.find('input[name*="[label]"]').val() || '',
+      });
+    });
+    return blocks;
+  }
+
+  function dayHasCompleteBlock(blocks) {
+    return blocks.some(function (block) {
+      return block.start && block.end;
+    });
+  }
+
+  function setBlocksForDay($daySection, blocks) {
+    var day = $daySection.data('day');
+    var $container = $daySection.find('.mrb-block-rows');
+    var $addBtn = $container.find('.mrb-add-block');
+
+    $container.find('.mrb-block-row').remove();
+
+    if (!blocks.length) {
+      blocks = [{ start: '', end: '', label: '' }];
+    }
+
+    blocks.forEach(function (block) {
+      $addBtn.before(blockRowHtml(day, block.start, block.end, block.label));
+    });
+  }
+
+  function findSourceDaySection($week, preferredDay) {
+    if (preferredDay !== undefined && preferredDay !== null && preferredDay !== '') {
+      var $preferred = $week.find('.mrb-block-day[data-day="' + preferredDay + '"]');
+      if ($preferred.length && dayHasCompleteBlock(readBlocksFromDay($preferred))) {
+        return $preferred;
+      }
+    }
+
+    var $found = null;
+    $week.find('.mrb-block-day').each(function () {
+      if ($found) {
+        return;
+      }
+      var $day = $(this);
+      if (dayHasCompleteBlock(readBlocksFromDay($day))) {
+        $found = $day;
+      }
+    });
+    return $found;
+  }
+
+  function applyBlocksToAllDays($trigger, preferredDay) {
+    var i18n = (window.mrBookingAdmin && mrBookingAdmin.i18n) || {};
+    var $week = $trigger.closest('.mrb-staff-schedule-box').find('.mrb-blocks-week');
+    if (!$week.length) {
+      return;
+    }
+
+    var $source = findSourceDaySection($week, preferredDay);
+    if (!$source || !$source.length) {
+      window.alert(i18n.applyBlocksNoSource || 'لطفاً ابتدا بازه زمانی (از و تا) را در حداقل یک روز وارد کنید.');
+      return;
+    }
+
+    var blocks = readBlocksFromDay($source);
+    $week.find('.mrb-block-day').each(function () {
+      if ($(this).is($source)) {
+        return;
+      }
+      setBlocksForDay($(this), blocks);
+    });
+
+    var $globalBtn = $week.siblings('.mrb-blocks-toolbar').find('.mrb-apply-blocks-all');
+    $globalBtn.addClass('is-applied');
+    window.setTimeout(function () {
+      $globalBtn.removeClass('is-applied');
+    }, 1800);
+  }
+
+  $(document).on('click', '.mrb-apply-blocks-all', function () {
+    applyBlocksToAllDays($(this));
+  });
+
+  $(document).on('click', '.mrb-apply-blocks-day', function () {
+    applyBlocksToAllDays($(this), $(this).data('day'));
+  });
+
+  $(document).on('click', '.mrb-add-block', function () {
+    var day = $(this).data('day');
+    $(this).before(blockRowHtml(day, '', '', ''));
+  });
+
+  $(document).on('click', '.mrb-remove-block', function () {
+    var $rows = $(this).closest('.mrb-block-rows').find('.mrb-block-row');
+    if ($rows.length <= 1) {
+      $(this).closest('.mrb-block-row').find('input').val('');
+      return;
+    }
+    $(this).closest('.mrb-block-row').remove();
+  });
+
+  function syncSpecialHours() {
+    var type = document.getElementById('mrb-special-type');
+    var box = document.getElementById('mrb-special-hours');
+    if (!type || !box) return;
+    box.classList.toggle('is-hidden', type.value !== 'special');
+  }
+
+  $(document).on('change', '#mrb-special-type', syncSpecialHours);
+  syncSpecialHours();
+
+	$(document).on('click', '.mrb-notif-var', function () {
+		var $btn = $(this);
+		var token = $btn.data('copy');
+		if (!token || !navigator.clipboard) {
+			return;
+		}
+		navigator.clipboard.writeText(token).then(function () {
+			$btn.addClass('is-copied');
+			setTimeout(function () {
+				$btn.removeClass('is-copied');
+			}, 1200);
+		});
+	});
+
+	$(document).on('submit', '.mrb-appt-delete-form', function (e) {
+		var msg = this.getAttribute('data-confirm');
+		if (msg && !window.confirm(msg)) {
+			e.preventDefault();
+		}
+	});
+
+	function setThemeActive(theme) {
+		$('.mrb-theme-card').removeClass('is-active');
+		$('.mrb-theme-card[data-theme="' + theme + '"]').addClass('is-active');
+		$('#mrb-form-theme').val(theme);
+	}
+
+	function applyColorPreset(preset) {
+		if (!preset) return;
+
+		function normalizeHex(val) {
+			if (val === null || val === undefined) return val;
+			var s = String(val).trim();
+			if (s.charAt(0) !== '#') s = '#' + s;
+			if (/^#[0-9a-fA-F]{6}$/.test(s)) return s.toLowerCase();
+			return s;
+		}
+
+		function settingField(key) {
+			return document.querySelector(
+				'[name="settings[' + key + ']"]'
+			);
+		}
+
+		Object.keys(preset).forEach(function (key) {
+			var val = preset[key];
+			var field = settingField(key);
+			if (!field) return;
+
+			if (field.type === 'checkbox') {
+				field.checked = !!parseInt(String(val), 10);
+				return;
+			}
+
+			if (field.type === 'color') {
+				val = normalizeHex(val);
+			}
+
+			field.value = val;
+
+			if (field.type === 'color') {
+				field.dispatchEvent(new Event('input', { bubbles: true }));
+			}
+		});
+
+		if (window.mrbInitColorInputs) {
+			window.mrbInitColorInputs(document);
+		}
+
+		document.querySelectorAll('.mrb-palette-card').forEach(function (card) {
+			var picker = card.querySelector('input[type="color"]');
+			var swatch = card.querySelector('.mrb-palette-card__swatch');
+			if (picker && swatch) {
+				swatch.style.backgroundColor = picker.value;
+			}
+		});
+	}
+
+	function initThemePresetSync() {
+		var applied = new URL(window.location.href).searchParams.get('theme_applied');
+		if (!applied) return;
+		var presets = (window.mrBookingAdmin && mrBookingAdmin.colorPresets) || {};
+		if (!presets[applied]) return;
+		applyColorPreset(presets[applied]);
+		setThemeActive(applied);
+	}
+
+	initThemePresetSync();
+
+	function showThemePreviewToast() {
+		var msg =
+			(window.mrBookingAdmin &&
+				mrBookingAdmin.i18n &&
+				mrBookingAdmin.i18n.themePreviewApplied) ||
+			'';
+		if (!msg) return;
+		var $toast = $('<div class="mrb-settings__toast mrb-settings__toast--inline" role="status">' +
+			'<span class="dashicons dashicons-yes-alt"></span>' + msg + '</div>');
+		$('.mrb-settings__theme-picker').first().append($toast);
+		setTimeout(function () {
+			$toast.fadeOut(200, function () {
+				$(this).remove();
+			});
+		}, 4200);
+	}
+
+	$(document).on('click', '.mrb-theme-card__preview-btn', function (e) {
+		e.preventDefault();
+		e.stopPropagation();
+		var theme = $(this).data('theme');
+		var presets = (window.mrBookingAdmin && mrBookingAdmin.colorPresets) || {};
+		if (!presets[theme]) return;
+		applyColorPreset(presets[theme]);
+		setThemeActive(theme);
+		showThemePreviewToast();
+	});
+
+	$(document).on('click', '.mrb-theme-card:not(.mrb-theme-card--custom)', function (e) {
+		if ($(e.target).closest('a, button').length) return;
+		var theme = $(this).data('theme');
+		var presets = (window.mrBookingAdmin && mrBookingAdmin.colorPresets) || {};
+		if (!presets[theme]) return;
+		applyColorPreset(presets[theme]);
+		setThemeActive(theme);
+	});
+
+	$(document).on('input change', '.mrb-settings__palette input[name^="settings[color_"], .mrb-settings__palette input[name="settings[bg_gradient_primary_mix]"], .mrb-settings__palette input[name="settings[bg_gradient_accent_mix]"]', function () {
+		if (!$('#mrb-form-theme').length) return;
+		setThemeActive('custom');
+	});
+
+	/* ─── New booking notifications (admin poll) ─── */
+	(function initBookingNotifications() {
+		var cfg = window.mrBookingAdmin || {};
+		if (!cfg.pollBookings || !cfg.ajaxUrl) return;
+
+		var STORAGE_KEY = 'mrbLastBookingId';
+		var SEEN_KEY = 'mrbSeenBookingIds';
+		var MUTE_KEY = 'mrbBookingSoundMuted';
+		var stack = null;
+		var seenIds = {};
+		var polling = false;
+
+		function loadSeenIds() {
+			try {
+				var raw = sessionStorage.getItem(SEEN_KEY);
+				if (!raw) return;
+				JSON.parse(raw).forEach(function (id) {
+					id = parseInt(id, 10);
+					if (id) seenIds[id] = true;
+				});
+			} catch (e) {
+				seenIds = {};
+			}
+		}
+
+		function persistSeenIds() {
+			var ids = Object.keys(seenIds)
+				.map(function (k) {
+					return parseInt(k, 10);
+				})
+				.filter(Boolean)
+				.sort(function (a, b) {
+					return a - b;
+				});
+			if (ids.length > 200) {
+				ids = ids.slice(-200);
+				seenIds = {};
+				ids.forEach(function (id) {
+					seenIds[id] = true;
+				});
+			}
+			sessionStorage.setItem(SEEN_KEY, JSON.stringify(ids));
+		}
+
+		function isBookingSeen(id) {
+			return !!seenIds[parseInt(id, 10)];
+		}
+
+		function markBookingSeen(id) {
+			id = parseInt(id, 10);
+			if (!id) return;
+			seenIds[id] = true;
+			persistSeenIds();
+			setSinceId(id);
+		}
+
+		function ensureStack() {
+			if (stack) return stack;
+			stack = document.createElement('div');
+			stack.className = 'mrb-admin-notify-stack';
+			stack.setAttribute('aria-live', 'polite');
+			document.body.appendChild(stack);
+			return stack;
+		}
+
+		function getSinceId() {
+			var stored = parseInt(sessionStorage.getItem(STORAGE_KEY) || '', 10);
+			if (stored) return stored;
+			var latest = parseInt(cfg.latestBookingId, 10) || 0;
+			sessionStorage.setItem(STORAGE_KEY, String(latest));
+			return latest;
+		}
+
+		function setSinceId(id) {
+			id = parseInt(id, 10) || 0;
+			if (!id) return;
+			var current = parseInt(sessionStorage.getItem(STORAGE_KEY) || '0', 10) || 0;
+			if (id > current) {
+				sessionStorage.setItem(STORAGE_KEY, String(id));
+			}
+			if (id > (parseInt(cfg.latestBookingId, 10) || 0)) {
+				cfg.latestBookingId = id;
+			}
+		}
+
+		function playNotifySound() {
+			if (localStorage.getItem(MUTE_KEY) === '1') return;
+			try {
+				var AudioCtx = window.AudioContext || window.webkitAudioContext;
+				if (!AudioCtx) return;
+				var ctx = new AudioCtx();
+				var t = ctx.currentTime;
+				[987.77, 783.99].forEach(function (freq, i) {
+					var osc = ctx.createOscillator();
+					var gain = ctx.createGain();
+					osc.type = 'sine';
+					osc.frequency.setValueAtTime(freq, t + i * 0.1);
+					gain.gain.setValueAtTime(0.0001, t + i * 0.1);
+					gain.gain.exponentialRampToValueAtTime(0.22, t + i * 0.1 + 0.015);
+					gain.gain.exponentialRampToValueAtTime(0.0001, t + i * 0.1 + 0.14);
+					osc.connect(gain);
+					gain.connect(ctx.destination);
+					osc.start(t + i * 0.1);
+					osc.stop(t + i * 0.1 + 0.15);
+				});
+				window.setTimeout(function () {
+					ctx.close();
+				}, 500);
+			} catch (e) {
+				/* ignore */
+			}
+		}
+
+		function tpl(text, vars) {
+			var out = text || '';
+			Object.keys(vars || {}).forEach(function (key) {
+				out = out.replace('%' + key + '$s', vars[key]);
+			});
+			return out;
+		}
+
+		function showBookingToast(booking) {
+			var i18n = cfg.i18n || {};
+			var el = document.createElement('div');
+			el.className = 'mrb-admin-notify';
+			el.innerHTML =
+				'<div class="mrb-admin-notify__icon" aria-hidden="true"></div>' +
+				'<div class="mrb-admin-notify__body">' +
+				'<strong>' + (i18n.newBookingTitle || 'رزرو جدید') + '</strong>' +
+				'<p>' +
+				tpl(i18n.newBookingBody || '%1$s — %2$s', {
+					1: booking.name || '',
+					2: booking.datetime || '',
+				}) +
+				'</p>' +
+				'<span class="mrb-admin-notify__meta">' +
+				(booking.code || '') +
+				' · ' +
+				(booking.status_label || '') +
+				'</span>' +
+				'</div>' +
+				'<div class="mrb-admin-notify__actions">' +
+				'<a class="button button-primary button-small" href="' +
+				(booking.url || cfg.appointmentsUrl) +
+				'">' +
+				(i18n.newBookingReload || 'مشاهده') +
+				'</a>' +
+				'<button type="button" class="button button-small mrb-admin-notify__dismiss">' +
+				(i18n.newBookingDismiss || 'بستن') +
+				'</button>' +
+				'</div>';
+
+			el.querySelector('.mrb-admin-notify__dismiss').addEventListener('click', function () {
+				markBookingSeen(booking.id);
+				el.classList.add('is-hiding');
+				window.setTimeout(function () {
+					el.remove();
+				}, 220);
+			});
+
+			var viewLink = el.querySelector('.mrb-admin-notify__actions a');
+			if (viewLink) {
+				viewLink.addEventListener('click', function () {
+					markBookingSeen(booking.id);
+				});
+			}
+
+			ensureStack().appendChild(el);
+			window.requestAnimationFrame(function () {
+				el.classList.add('is-visible');
+			});
+
+			window.setTimeout(function () {
+				if (el.parentNode) {
+					el.classList.add('is-hiding');
+					window.setTimeout(function () {
+						el.remove();
+					}, 220);
+				}
+			}, 12000);
+		}
+
+		function poll() {
+			if (polling) return;
+			polling = true;
+
+			var sinceId = getSinceId();
+			$.post(cfg.ajaxUrl, {
+				action: 'mr_booking_admin',
+				nonce: cfg.nonce,
+				mr_action: 'check_new_bookings',
+				since_id: sinceId,
+			})
+				.done(function (res) {
+					if (!res || !res.success || !res.data) return;
+					var data = res.data;
+					var latestId = parseInt(data.latest_id, 10) || 0;
+					if (latestId) {
+						cfg.latestBookingId = latestId;
+					}
+
+					var bookings = (data.bookings || []).filter(function (booking) {
+						return booking && booking.id && !isBookingSeen(booking.id);
+					});
+
+					if (!bookings.length) {
+						if (latestId) {
+							setSinceId(Math.max(sinceId, latestId));
+						}
+						return;
+					}
+
+					playNotifySound();
+					bookings.forEach(function (booking) {
+						markBookingSeen(booking.id);
+						showBookingToast(booking);
+					});
+
+					var maxId = bookings.reduce(function (max, booking) {
+						return Math.max(max, parseInt(booking.id, 10) || 0);
+					}, sinceId);
+					if (latestId) {
+						maxId = Math.max(maxId, latestId);
+					}
+					setSinceId(maxId);
+
+					document.querySelectorAll('.mrb-appt-table tbody tr, .mrb-table--recent tbody tr').forEach(function (row) {
+						row.classList.remove('is-new-flash');
+					});
+					bookings.forEach(function (booking) {
+						var row = document.querySelector('tr[data-booking-id="' + booking.id + '"]');
+						if (row) row.classList.add('is-new-flash');
+					});
+				})
+				.fail(function () {
+					/* silent */
+				})
+				.always(function () {
+					polling = false;
+				});
+		}
+
+		loadSeenIds();
+		getSinceId();
+		window.setInterval(poll, parseInt(cfg.pollIntervalMs, 10) || 30000);
+		window.setTimeout(poll, 4000);
+	})();
+
+  var serviceEditor = document.getElementById('mrb-service-editor');
+  if (serviceEditor && /[?&]new=1(?:&|$)/.test(window.location.search)) {
+    window.requestAnimationFrame(function () {
+      serviceEditor.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    });
+  }
+
+  $(document).on('click', '#mrb-test-sms-connection', function () {
+    var cfg = window.mrBookingAdmin || {};
+    var i18n = cfg.i18n || {};
+    var $btn = $(this);
+    var $result = $('#mrb-sms-test-result');
+    var $form = $btn.closest('form');
+    var $creditBadge = $('#mrb-sms-credit-badge');
+    var $creditValue = $('#mrb-sms-credit-value');
+
+    if (!$form.length) {
+      return;
+    }
+
+    $btn.prop('disabled', true).addClass('is-busy');
+    $result.removeClass('is-success is-error').attr('hidden', false).text(i18n.smsTesting || 'در حال تست اتصال…');
+
+    $.post(cfg.ajaxUrl, {
+      action: 'mr_booking_admin',
+      nonce: cfg.nonce,
+      mr_action: 'test_sms_connection',
+      sms_provider: $form.find('[name="settings[sms_provider]"]').val() || '',
+      sms_api_key: $form.find('[name="settings[sms_api_key]"]').val() || '',
+      sms_username: $form.find('[name="settings[sms_username]"]').val() || '',
+      sms_password: $form.find('[name="settings[sms_password]"]').val() || '',
+      sms_sender: $form.find('[name="settings[sms_sender]"]').val() || '',
+      sms_api_url: $form.find('[name="settings[sms_api_url]"]').val() || ''
+    })
+      .done(function (res) {
+        if (res && res.success && res.data) {
+          var msg = res.data.message || i18n.smsTestSuccess || 'اتصال برقرار است.';
+          $result.addClass('is-success').text(msg);
+
+          if (res.data.account && typeof res.data.account.credit === 'number') {
+            var creditText = toFa(String(Math.round(res.data.account.credit)).replace(/\B(?=(\d{3})+(?!\d))/g, ','));
+            $creditBadge.removeAttr('hidden').removeAttr('data-empty');
+            $creditBadge.attr('data-provider', $form.find('[name="settings[sms_provider]"]').val() || '');
+            $creditValue.html(creditText + ' <small>ریال</small>');
+          }
+          return;
+        }
+
+        var err =
+          (res && res.data && (res.data.error || res.data.message)) ||
+          i18n.smsTestFailed ||
+          'اتصال ناموفق بود.';
+        $result.addClass('is-error').text(err);
+      })
+      .fail(function (xhr) {
+        var err =
+          (xhr.responseJSON && xhr.responseJSON.data && xhr.responseJSON.data.error) ||
+          i18n.error ||
+          'خطا رخ داد.';
+        $result.addClass('is-error').text(err);
+      })
+      .always(function () {
+        $btn.prop('disabled', false).removeClass('is-busy');
+      });
+  });
+
+  function syncSmsProviderUi() {
+    var hintsEl = document.getElementById('mrb-sms-test-hints');
+    var supportEl = document.getElementById('mrb-sms-credit-support');
+    var hintEl = document.getElementById('mrb-sms-test-hint');
+    var creditBadge = document.getElementById('mrb-sms-credit-badge');
+    var providerSelect = document.querySelector('[name="settings[sms_provider]"]');
+
+    if (!hintsEl || !hintEl || !providerSelect) {
+      return;
+    }
+
+    var hints = {};
+    var support = {};
+    try {
+      hints = JSON.parse(hintsEl.textContent || '{}');
+      support = supportEl ? JSON.parse(supportEl.textContent || '{}') : {};
+    } catch (e) {
+      hints = {};
+      support = {};
+    }
+
+    var provider = providerSelect.value || 'kavenegar';
+    hintEl.textContent = hints[provider] || '';
+
+    if (creditBadge) {
+      if (support[provider]) {
+        creditBadge.removeAttribute('hidden');
+        var creditValue = document.getElementById('mrb-sms-credit-value');
+        if (creditValue && creditBadge.getAttribute('data-provider') !== provider) {
+          creditValue.textContent = '—';
+          creditBadge.setAttribute('data-empty', '1');
+        }
+      } else {
+        creditBadge.setAttribute('hidden', 'hidden');
+      }
+    }
+  }
+
+  $(document).on('change', '[name="settings[sms_provider]"]', syncSmsProviderUi);
+  syncSmsProviderUi();
+
+  function initAdminDialogs() {
+    var supportsInvoker = 'commandForElement' in HTMLButtonElement.prototype;
+    var supportsClosedBy =
+      typeof HTMLDialogElement !== 'undefined' && 'closedBy' in HTMLDialogElement.prototype;
+
+    document.querySelectorAll('dialog.mrb-dialog').forEach(function (dialog) {
+      if (!supportsClosedBy) {
+        dialog.addEventListener('click', function (event) {
+          if (event.target !== dialog) return;
+          var rect = dialog.getBoundingClientRect();
+          var inside =
+            rect.top <= event.clientY &&
+            event.clientY <= rect.top + rect.height &&
+            rect.left <= event.clientX &&
+            event.clientX <= rect.left + rect.width;
+          if (!inside) {
+            dialog.close();
+          }
+        });
+      }
+    });
+
+    $(document).on('click', '.mrb-js-open-dialog', function (e) {
+      if (supportsInvoker && this.hasAttribute('commandfor')) {
+        return;
+      }
+      var id = this.getAttribute('data-dialog') || this.getAttribute('commandfor');
+      var target = id ? document.getElementById(id) : null;
+      if (!target || typeof target.showModal !== 'function') return;
+      e.preventDefault();
+      if (!target.open) {
+        target.showModal();
+      }
+    });
+
+    if (!supportsInvoker) {
+      document.querySelectorAll('[commandfor][command="close"]').forEach(function (btn) {
+        btn.addEventListener('click', function () {
+          var target = document.getElementById(btn.getAttribute('commandfor'));
+          if (target && target.open) {
+            target.close();
+          }
+        });
+      });
+    }
+
+    var editDialog = document.getElementById('mrb-edit-customer-dialog');
+    if (editDialog && /[?&]error=/.test(window.location.search) && typeof editDialog.showModal === 'function') {
+      editDialog.showModal();
+    }
+
+    document.querySelectorAll('dialog.mrb-dialog').forEach(function (dialog) {
+      dialog.addEventListener('close', function () {
+        document.querySelectorAll('.mrb-wheel.is-open [data-wheel-close]').forEach(function (btn) {
+          btn.click();
+        });
+      });
+    });
+  }
+
+  function initAdminBirthPickers() {
+    if (!window.mrbBirthPicker) return;
+    var cfg = window.mrBookingAdmin || {};
+    var i18n = cfg.i18n || {};
+    document.querySelectorAll('[data-mrb-birth-picker]').forEach(function (root) {
+      var prefix = root.getAttribute('data-mrb-birth-picker');
+      if (!prefix) return;
+      var picker = window.mrbBirthPicker.init({
+        root: document,
+        prefix: prefix,
+        calendarMode: cfg.calendarMode === 'gregorian' ? 'gregorian' : 'jalali',
+        months: cfg.jalaliMonths,
+        placeholder: i18n.selectBirth || 'انتخاب تاریخ تولد',
+      });
+      if (!picker) return;
+      var initial = root.getAttribute('data-birth-value') || '';
+      if (initial) picker.setValue(initial);
+    });
+  }
+
+  function initQuickPrice() {
+    var dialog = document.getElementById('mrb-quick-price-dialog');
+    if (!dialog || typeof dialog.showModal !== 'function') return;
+
+    var cfg = window.mrBookingAdmin || {};
+    var i18n = cfg.i18n || {};
+    var money = window.mrbMoneyInput || null;
+    var idField = document.getElementById('mrb-quick-price-id');
+    var amount = document.getElementById('mrb-quick-price-amount');
+    var serviceLabel = document.getElementById('mrb-quick-price-service');
+    var preview = document.getElementById('mrb-quick-price-preview');
+    var form = document.getElementById('mrb-quick-price-form');
+    var toFa = function (str) {
+      return String(str).replace(/\d/g, function (d) { return '۰۱۲۳۴۵۶۷۸۹'[d]; });
+    };
+
+    function renderPreview() {
+      if (!preview) return;
+      var value = money ? money.parse(amount.value) : Number(String(amount.value).replace(/[^\d]/g, '')) || 0;
+      if (value > 0) {
+        preview.textContent = toFa(value.toLocaleString('en-US')) + ' ' + (i18n.currency || 'تومان');
+        preview.classList.remove('is-empty');
+      } else {
+        var fieldNow = (document.getElementById('mrb-quick-price-field') || {}).value;
+        preview.textContent = fieldNow === 'deposit' ? (i18n.noDeposit || 'بدون پیش‌پرداخت') : (i18n.noPrice || 'بدون قیمت');
+        preview.classList.add('is-empty');
+      }
+    }
+
+    $(document).on('click', '.mrb-js-quick-price', function () {
+      var field = this.getAttribute('data-field') === 'deposit' ? 'deposit' : 'price';
+      var fieldInput = document.getElementById('mrb-quick-price-field');
+      var title = document.getElementById('mrb-quick-price-title');
+      var hint = document.getElementById('mrb-quick-price-hint');
+      if (fieldInput) fieldInput.value = field;
+      if (title) title.textContent = title.getAttribute('data-title-' + field) || title.textContent;
+      if (hint) hint.textContent = hint.getAttribute('data-hint-' + field) || hint.textContent;
+      idField.value = this.getAttribute('data-id') || '';
+      amount.value = this.getAttribute('data-price') || '';
+      if (serviceLabel) serviceLabel.textContent = this.getAttribute('data-name') || '';
+      if (money) money.attach(amount);
+      renderPreview();
+      dialog.dataset.returnFocus = this.getAttribute('data-id') || '';
+      if (!dialog.open) dialog.showModal();
+      // Let the dialog paint before selecting so the caret is visible.
+      setTimeout(function () {
+        amount.focus();
+        amount.select();
+      }, 30);
+    });
+
+    amount.addEventListener('input', renderPreview);
+
+    if (form) {
+      form.addEventListener('submit', function () {
+        var submit = form.querySelector('button[type="submit"]');
+        if (submit) {
+          submit.disabled = true;
+          submit.setAttribute('aria-busy', 'true');
+        }
+      });
+    }
+
+    dialog.addEventListener('close', function () {
+      var id = dialog.dataset.returnFocus;
+      var origin = id ? document.querySelector('.mrb-js-quick-price[data-id="' + id + '"]') : null;
+      if (origin) origin.focus();
+    });
+  }
+
+  function initWalletDialog() {
+    var dialog = document.getElementById('mrb-wallet-dialog');
+    if (!dialog || typeof dialog.showModal !== 'function') return;
+    var idField = document.getElementById('mrb-wallet-dialog-id');
+    var nameEl = document.getElementById('mrb-wallet-dialog-name');
+    var balEl = document.getElementById('mrb-wallet-dialog-balance');
+    var amount = document.getElementById('mrb-wallet-dialog-amount');
+    var type = document.getElementById('mrb-wallet-dialog-type');
+    $(document).on('click', '.mrb-js-wallet-adjust', function () {
+      idField.value = this.getAttribute('data-id') || '';
+      if (nameEl) nameEl.textContent = this.getAttribute('data-name') || '';
+      if (balEl) balEl.textContent = this.getAttribute('data-balance') || '';
+      if (type) type.value = 'credit';
+      amount.value = '';
+      if (window.mrbMoneyInput) window.mrbMoneyInput.attach(amount);
+      dialog.dataset.returnFocus = this.getAttribute('data-id') || '';
+      if (!dialog.open) dialog.showModal();
+      setTimeout(function () { amount.focus(); }, 30);
+    });
+    dialog.addEventListener('close', function () {
+      var id = dialog.dataset.returnFocus;
+      var origin = id ? document.querySelector('.mrb-js-wallet-adjust[data-id="' + id + '"]') : null;
+      if (origin) origin.focus();
+    });
+  }
+
+  initAdminDialogs();
+  initAdminBirthPickers();
+  initQuickPrice();
+  initWalletDialog();
+})(jQuery);
